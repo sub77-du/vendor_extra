@@ -12,6 +12,14 @@ PRODUCT_PACKAGES += \
 PRODUCT_COPY_FILES += \
 		vendor/extra/prebuilt/common/addon.d/60-removal.sh:system/addon.d/60-removal.sh
 
+# Viper4Android
+PRODUCT_COPY_FILES += \
+		vendor/extra/prebuilt/common/bin/audio_policy.sh:system/audio_policy.sh \
+		vendor/extra/prebuilt/common/addon.d/95-LolliViPER.sh:system/addon.d/95-LolliViPER.sh \
+		vendor/extra/prebuilt/common/su.d/50viper.sh:system/su.d/50viper.sh \
+		vendor/extra/prebuilt/common/apk/Viper4Android/Viper4Android.apk:system/priv-app/Viper4Android/Viper4Android.apk 
+
+
 ########################################
 ############# Settings #################
 ########################################
