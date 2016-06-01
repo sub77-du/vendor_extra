@@ -6,7 +6,6 @@
 # Add wanted packages
 PRODUCT_PACKAGES += \
 		Matlog \
-		OpenCamera \
 		KernelAdiutor
 
 # APP REMOVAL SCRIPT
