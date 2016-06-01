@@ -3,10 +3,6 @@
 ############## Packages ################
 ########################################
 
-# Remove packages
-REMOVE_PACKAGES := \
-		Camera2
-
 # Add wanted packages
 PRODUCT_PACKAGES += \
 		Matlog \
