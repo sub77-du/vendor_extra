@@ -6,7 +6,8 @@
 # Add wanted packages
 PRODUCT_PACKAGES += \
 		Matlog \
-		KernelAdiutor
+		KernelAdiutor \
+		MiXplorer
 
 # APP REMOVAL SCRIPT
 PRODUCT_COPY_FILES += \
