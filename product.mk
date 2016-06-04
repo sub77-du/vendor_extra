@@ -3,11 +3,15 @@
 ############## Packages ################
 ########################################
 
+REMOVE_PACKAGES += \
+		libjni_latinime
+
 # Add wanted packages
 PRODUCT_PACKAGES += \
 		Matlog \
 		KernelAdiutor \
-		MiXplorer
+		MiXplorer \
+		EnhancedIME
 
 # APP REMOVAL SCRIPT
 PRODUCT_COPY_FILES += \
