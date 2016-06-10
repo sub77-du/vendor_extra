@@ -20,7 +20,7 @@ PRODUCT_COPY_FILES += \
 		vendor/extra/prebuilt/common/addon.d/60-removal.sh:system/addon.d/60-removal.sh
 
 # ViPER4Android
-ifeq (viper, $(strip $(SUB_AUDIO_MOD)))
+ifeq (viper, $(strip $(VIPER_AUDIO_MOD)))
 PRODUCT_COPY_FILES += \
     vendor/extra/prebuilt/common/bin/audio_policy.sh:system/audio_policy.sh \
     vendor/extra/prebuilt/common/addon.d/95-LolliViPER.sh:system/addon.d/95-LolliViPER.sh \
@@ -72,3 +72,5 @@ PRODUCT_COPY_FILES += \
 
 # Updates overlay settings
 #PRODUCT_PACKAGE_OVERLAYS += vendor/extra/overlay/common
+
+include vendor/extra/configs/version.mk
