@@ -1,0 +1,29 @@
+From e8ea93dc936243da1792dec82f13081b9f34b743 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Tue, 31 May 2016 14:59:54 -0500
+Subject: [PATCH 2/2] gcc5: fix __CHAR32_TYPE__
+
+Change-Id: I0bd48fd2849173cc4f9bb33a4946c5fddc6e332b
+---
+ libc/include/uchar.h | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/libc/include/uchar.h b/libc/include/uchar.h
+index e1fcb5c..a5e72ea 100644
+--- a/libc/include/uchar.h
++++ b/libc/include/uchar.h
+@@ -34,6 +34,11 @@
+ 
+ __BEGIN_DECLS
+ 
++#if __STDC_VERSION__ >= 201112L && !defined(__cplusplus)
++typedef __CHAR16_TYPE__ char16_t;
++typedef __CHAR32_TYPE__ char32_t;
++#endif
++
+ #define __STD_UTF_16__ 1
+ #define __STD_UTF_32__ 1
+ 
+-- 
+1.9.1
+
