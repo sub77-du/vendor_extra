@@ -51,6 +51,7 @@ index 94eba9e..214e38f 100644
 +        <Preference android:key="uber_flags"
 +                style="?android:preferenceInformationStyle"
 +                android:title="@string/uber_flags"
++                android:summary="@string/uber_flags_default" />
 +
          <!-- DU version -->
          <Preference android:key="mod_version"

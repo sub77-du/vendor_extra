@@ -362,7 +362,7 @@ index 0000000..d9bfd0d
 +
 +import com.android.internal.logging.MetricsLogger;
 +
-#import com.dirtyunicorns.dutweaks.preference.SystemSettingSwitchPreference;
++import com.dirtyunicorns.dutweaks.preference.SystemSettingSwitchPreference;
 +import com.android.settings.R;
 +import com.android.settings.SettingsPreferenceFragment;
 +

@@ -1,5 +1,6 @@
-
 build_root=$(pwd) # vendorsetup.sh is sourced by build/envsetup.sh in root of android build tree. Hope that nobody can correctly source it not from root of android tree.
+
+. $ANDROID_BUILD_TOP/vendor/extra/tools/colors
 
 echo Touching prebuilts/qemu-kernel/arm/LINUX_KERNEL_COPYING
 mkdir -p prebuilts/qemu-kernel/arm/
@@ -50,11 +51,11 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
 		echo No
 		echo "Trying to apply patch $(basename "$patch") to '$repo_to_patch'"
 		if ! git am $absolute_patch_path; then
-			echo "Failed, aborting git am"
+			echo -e ${CL_RED}"Failed, aborting git am"${CL_RST}
 			git am --abort
 		fi
 	fi
 	popd > /dev/null
 done
 popd > /dev/null
-echo "Applying patches: done"
+echo -e ${CL_GRN}"Applying patches: done"${CL_RST}
