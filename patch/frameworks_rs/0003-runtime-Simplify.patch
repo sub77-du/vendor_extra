@@ -1,0 +1,28 @@
+From f1a55e727eb689feec8713e099f3b84a8ca0bbb5 Mon Sep 17 00:00:00 2001
+From: Joe Maples <frap129@gmail.com>
+Date: Sat, 26 Dec 2015 14:41:44 -0500
+Subject: [PATCH 3/4] runtime: Simplify
+
+Signed-off-by: Joe Maples <frap129@gmail.com>
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ driver/runtime/build_bc_lib_internal.mk | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/driver/runtime/build_bc_lib_internal.mk b/driver/runtime/build_bc_lib_internal.mk
+index f120885..c76e822 100644
+--- a/driver/runtime/build_bc_lib_internal.mk
++++ b/driver/runtime/build_bc_lib_internal.mk
+@@ -18,8 +18,7 @@ ifndef BCC_RS_TRIPLE
+ BCC_RS_TRIPLE := $($(LOCAL_2ND_ARCH_VAR_PREFIX)RS_TRIPLE)
+ endif
+ 
+-AOSP_LLVM_PREBUILTS_VERSION := 3.6
+-AOSP_LLVM_PREBUILTS_PATH := prebuilts/clang/$(BUILD_OS)-x86/host/$(LLVM_PREBUILTS_VERSION)/bin
++AOSP_LLVM_PREBUILTS_PATH := prebuilts/clang/$(BUILD_OS)-x86/host/3.6/bin
+ AOSP_CLANG := $(AOSP_LLVM_PREBUILTS_PATH)/clang$(BUILD_EXECUTABLE_SUFFIX)
+ AOSP_LLVM_LINK := $(AOSP_LLVM_PREBUILTS_PATH)/llvm-link$(BUILD_EXECUTABLE_SUFFIX)
+ AOSP_LLVM_AS := $(AOSP_LLVM_PREBUILTS_PATH)/llvm-as$(BUILD_EXECUTABLE_SUFFIX)
+-- 
+1.9.1
+

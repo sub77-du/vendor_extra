@@ -1,0 +1,82 @@
+From 6c48818288fc654ce8c7b9cab3beee075983a1b3 Mon Sep 17 00:00:00 2001
+From: Joe Maples <frap129@gmail.com>
+Date: Fri, 25 Dec 2015 18:19:59 -0500
+Subject: [PATCH 1/4] runtime: Fix compile with newer Clang versions
+
+Credits to mustermaxmuller
+
+Signed-off-by: Joe Maples <frap129@gmail.com>
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ driver/runtime/arch/generic.c  | 15 +++++++--------
+ driver/runtime/rs_allocation.c |  9 +++------
+ driver/runtime/rs_sample.c     |  4 +++-
+ 3 files changed, 13 insertions(+), 15 deletions(-)
+
+diff --git a/driver/runtime/arch/generic.c b/driver/runtime/arch/generic.c
+index 9bd1bd6..a06723e 100644
+--- a/driver/runtime/arch/generic.c
++++ b/driver/runtime/arch/generic.c
+@@ -634,14 +634,13 @@ extern uchar4 __attribute__((overloadable)) rsYuvToRGBA_uchar4(uchar y, uchar u,
+     short V = ((short)v) - 128;
+ 
+     short4 p;
+-    p.r = (Y * 298 + V * 409 + 128) >> 8;
+-    p.g = (Y * 298 - U * 100 - V * 208 + 128) >> 8;
+-    p.b = (Y * 298 + U * 516 + 128) >> 8;
+-    p.a = 255;
+-    p.r = rsClamp(p.r, (short)0, (short)255);
+-    p.g = rsClamp(p.g, (short)0, (short)255);
+-    p.b = rsClamp(p.b, (short)0, (short)255);
+-
++    p.x = (Y * 298 + V * 409 + 128) >> 8;
++    p.y = (Y * 298 - U * 100 - V * 208 + 128) >> 8;
++    p.z = (Y * 298 + U * 516 + 128) >> 8;
++    p.w = 255;
++    p.x = rsClamp(p.x, (short)0, (short)255);
++    p.y = rsClamp(p.y, (short)0, (short)255);
++    p.z = rsClamp(p.z, (short)0, (short)255);
+     return convert_uchar4(p);
+ }
+ 
+diff --git a/driver/runtime/rs_allocation.c b/driver/runtime/rs_allocation.c
+index 8c8d1ba..d287b2d 100644
+--- a/driver/runtime/rs_allocation.c
++++ b/driver/runtime/rs_allocation.c
+@@ -286,15 +286,12 @@ ELEMENT_AT(double3)
+ ELEMENT_AT(double4)
+ 
+ typedef unsigned long long ull;
+-typedef unsigned long long ull2 __attribute__((ext_vector_type(2)));
+-typedef unsigned long long ull3 __attribute__((ext_vector_type(3)));
+-typedef unsigned long long ull4 __attribute__((ext_vector_type(4)));
++typedef unsigned long ull2 __attribute__((ext_vector_type(2)));
++typedef unsigned long ull3 __attribute__((ext_vector_type(3)));
++typedef unsigned long ull4 __attribute__((ext_vector_type(4)));
+ 
+ #ifndef RS_DEBUG_RUNTIME
+ SET_ELEMENT_AT_TYPE(ull, ulong)
+-SET_ELEMENT_AT_TYPE(ull2, ulong2)
+-SET_ELEMENT_AT_TYPE(ull3, ulong3)
+-SET_ELEMENT_AT_TYPE(ull4, ulong4)
+ 
+ #undef SET_ELEMENT_AT_TYPE
+ #undef GET_ELEMENT_AT_TYPE
+diff --git a/driver/runtime/rs_sample.c b/driver/runtime/rs_sample.c
+index 95620e3..b655729 100644
+--- a/driver/runtime/rs_sample.c
++++ b/driver/runtime/rs_sample.c
+@@ -259,7 +259,9 @@ static float4 __attribute__((overloadable))
+     float3 r = p0 * w0 + p1 * w1 + p2 * w2 + p3 * w3;
+     r *= (1.f / 255.f);
+     float4 ret;
+-    ret.rgb = r;
++    ret.x = r.x;
++    ret.y = r.y;
++    ret.z = r.z;
+     ret.w = 1.f;
+     return ret;
+ }
+-- 
+1.9.1
+
