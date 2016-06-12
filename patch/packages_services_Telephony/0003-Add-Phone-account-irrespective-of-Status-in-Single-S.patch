@@ -1,0 +1,87 @@
+From 2293e994cc03bf2712a0d31552979fc2aee0d9ad Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 11:47:10 -0500
+Subject: [PATCH 3/4] Add Phone account irrespective of Status in Single SIM
+
+In Single SIM, add phone account irrespective of SIM status
+
+Change-Id: I1f23432e86ecd742c03dee75b9a817d0e4418b6f
+---
+ .../services/telephony/TelecomAccountRegistry.java | 52 ++++++++++++----------
+ 1 file changed, 28 insertions(+), 24 deletions(-)
+
+diff --git a/src/com/android/services/telephony/TelecomAccountRegistry.java b/src/com/android/services/telephony/TelecomAccountRegistry.java
+index 9118fe1..78490bb 100644
+--- a/src/com/android/services/telephony/TelecomAccountRegistry.java
++++ b/src/com/android/services/telephony/TelecomAccountRegistry.java
+@@ -468,39 +468,43 @@ final class TelecomAccountRegistry {
+ 
+         if (phoneAccountsEnabled) {
+             for (Phone phone : phones) {
+-            int provisionStatus = INVALID_STATE;
++            int provisionStatus = PROVISIONED;
+             int subscriptionId = phone.getSubId();
+-            SubscriptionInfo record =
+-                    mSubscriptionManager.getActiveSubscriptionInfo(subscriptionId);
+-
+-            if (record == null) {
+-                Log.d(this, "Record not created for dummy subscription id %d", subscriptionId);
+-                continue;
+-            }
+-
+-            int slotId = record.getSimSlotIndex();
++            
++            if (mTelephonyManager.getPhoneCount() > 1) {
++                SubscriptionInfo record =
++                        mSubscriptionManager.getActiveSubscriptionInfo(subscriptionId);
++
++                if (record == null) {
++                    Log.d(this, "Record not created for dummy subscription id %d", subscriptionId);
++                    continue;
++                }
+ 
+-            try {
+-                //get current provision state of the SIM.
+-               provisionStatus =
+-                        mExtTelephony.getCurrentUiccCardProvisioningStatus(slotId);
+-            } catch (RemoteException ex) {
+-                Log.w(this, "Failed to get status for, slotId: "+ slotId +" Exception: " + ex);
+-            } catch (NullPointerException ex) {
+-                Log.w(this, "Failed to get status for, slotId: "+ slotId +" Exception: " + ex);
+-            }
++                int slotId = record.getSimSlotIndex();
++
++                try {
++                    //get current provision state of the SIM.
++                    provisionStatus =
++                            mExtTelephony.getCurrentUiccCardProvisioningStatus(slotId);
++                } catch (RemoteException ex) {
++                    provisionStatus = INVALID_STATE;
++                    Log.w(this, "Failed to get status for, slotId: "+ slotId +" Exception: " + ex);
++                } catch (NullPointerException ex) {
++                    provisionStatus = INVALID_STATE;
++                    Log.w(this, "Failed to get status for, slotId: "+ slotId +" Exception: " + ex);
++                }
+ 
+                 if (provisionStatus == INVALID_STATE) {
+                     provisionStatus = PROVISIONED;
+                 }
+ 
+-            Log.d(this, "Phone with subscription id: " + subscriptionId +
+-                            " slotId: " + slotId + " provisionStatus: " + provisionStatus);
++                Log.d(this, "Phone with subscription id: " + subscriptionId +
++                                " slotId: " + slotId + " provisionStatus: " + provisionStatus);
++            }
++
+             if ((subscriptionId >= 0) && (provisionStatus == PROVISIONED)){
+-                    mAccounts.add(new AccountEntry(phone, false /* emergency */,
+-                            false /* isDummy */));
++                    mAccounts.add(new AccountEntry(phone, false /* emergency */, false /* isDummy */));
+                 }
+-            }
+         }
+ 
+         // If we did not list ANY accounts, we need to provide a "default" SIM account
+-- 
+1.9.1
+

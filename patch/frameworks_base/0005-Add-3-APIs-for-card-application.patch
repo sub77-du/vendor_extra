@@ -1,0 +1,66 @@
+From 11af968a94d4a71c4926921a565c4cbb8d038d8d Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 13:00:14 -0500
+Subject: [PATCH 1/2] Add 3 APIs for card application
+
+1. Add API to get number of applications on this card.
+2. Add API to get the application type of the specified app index.
+3. Add API to get the application state of the specified app index.
+
+|Change-Id: I5f73eb4aa3ebcd5308f398924eb2f4a2e7e39696
+
+Change-Id: Idb74f5b1798e6f9d7698b04c5a37703811fe1373
+---
+ .../android/internal/telephony/IExtTelephony.aidl  | 38 ++++++++++++++++++++++
+ 1 file changed, 38 insertions(+)
+
+diff --git a/telephony/java/com/android/internal/telephony/IExtTelephony.aidl b/telephony/java/com/android/internal/telephony/IExtTelephony.aidl
+index 31cb58f..59fbc56 100644
+--- a/telephony/java/com/android/internal/telephony/IExtTelephony.aidl
++++ b/telephony/java/com/android/internal/telephony/IExtTelephony.aidl
+@@ -91,4 +91,42 @@ interface IExtTelephony {
+      * Requires Permission: android.Manifest.permission.MODIFY_PHONE_STATE
+      */
+     int deactivateUiccCard(int slotId);
++
++    /**
++    * Get application count from card.
++    * @param - slotId user preferred slotId
++    * @return application count
++    */
++    int getUiccApplicationCount(int slotId);
++
++    /**
++    * Get application type by index.
++    * @param - slotId user preferred slotId
++    *        - appIndex application index
++    * @return application type as Integer, below are
++    *     supported return values:
++    *     '0' - APPTYPE_UNKNOWN
++    *     '1' - APPTYPE_SIM
++    *     '2' - APPTYPE_USIM
++    *     '3  - APPTYPE_RUIM
++    *     '4' - APPTYPE_CSIM
++    *     '5' - APPTYPE_ISIM
++    */
++    int getUiccApplicationType(int slotId, int appIndex);
++
++    /**
++    * Get application state by index.
++    * @param - slotId user preferred slotId
++    *        - appIndex application index
++    * @return application state as Integer, below are
++    *     supported return values:
++    *     '0' - APPSTATE_UNKNOWN
++    *     '1' - APPSTATE_DETECTED
++    *     '2' - APPSTATE_PIN
++    *     '3  - APPSTATE_PUK
++    *     '4' - APPSTATE_SUBSCRIPTION_PERSO
++    *     '5' - APPSTATE_READY
++    */
++    int getUiccApplicationState(int slotId, int appIndex);
++    
+ }
+-- 
+1.9.1
+

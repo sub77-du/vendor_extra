@@ -1,9 +1,9 @@
-From 725ce0d42c39cb76b77284f731360f1fdabb2762 Mon Sep 17 00:00:00 2001
+From 31b77aaf8c5e9175a49c675e6b7fad567882cc55 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Sun, 12 Jun 2016 01:11:04 -0500
+Date: Sun, 12 Jun 2016 05:54:54 -0500
 Subject: [PATCH] Settings: Display GCC version if present
 
-Change-Id: Ia3c84affd828c4044c0772f027602a141ef10ed1
+Change-Id: I3cb404089585d40e0fe3d6e3dd990c9d9d39d0f8
 ---
  res/values/du_strings.xml                        | 10 ++++++++++
  res/xml/device_info_settings.xml                 | 15 +++++++++++++++
@@ -11,10 +11,10 @@ Change-Id: Ia3c84affd828c4044c0772f027602a141ef10ed1
  3 files changed, 43 insertions(+)
 
 diff --git a/res/values/du_strings.xml b/res/values/du_strings.xml
-index ebccfb2..b0ff6a5 100644
+index 23364f9..8fc07b7 100644
 --- a/res/values/du_strings.xml
 +++ b/res/values/du_strings.xml
-@@ -382,4 +382,14 @@
+@@ -384,4 +384,14 @@
      <string name="dtc_version">Clang</string>
      <string name="dtc_version_default">None</string>
  
@@ -30,7 +30,7 @@ index ebccfb2..b0ff6a5 100644
 +
  </resources>
 diff --git a/res/xml/device_info_settings.xml b/res/xml/device_info_settings.xml
-index 94eba9e..214e38f 100644
+index 94eba9e..c28c460 100644
 --- a/res/xml/device_info_settings.xml
 +++ b/res/xml/device_info_settings.xml
 @@ -119,6 +119,21 @@
@@ -52,7 +52,6 @@ index 94eba9e..214e38f 100644
 +                style="?android:preferenceInformationStyle"
 +                android:title="@string/uber_flags"
 +                android:summary="@string/uber_flags_default" />
-+
          <!-- DU version -->
          <Preference android:key="mod_version"
                  style="?android:preferenceInformationStyle"

@@ -1,0 +1,45 @@
+From 109a1b7102097c54d45781f9b7c211142d54cfda Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 08:55:07 -0500
+Subject: [PATCH] Revert "Use same technology type for LTE/4G"
+
+This reverts commit 7995ca4165cae43b9bff25a6e6eafdb51445b698.
+---
+ src/com/android/settings/deviceinfo/SimStatus.java | 14 --------------
+ 1 file changed, 14 deletions(-)
+
+diff --git a/src/com/android/settings/deviceinfo/SimStatus.java b/src/com/android/settings/deviceinfo/SimStatus.java
+index c5f6482..3875750 100644
+--- a/src/com/android/settings/deviceinfo/SimStatus.java
++++ b/src/com/android/settings/deviceinfo/SimStatus.java
+@@ -22,7 +22,6 @@ import android.content.BroadcastReceiver;
+ import android.content.Context;
+ import android.content.Intent;
+ import android.content.IntentFilter;
+-import android.content.pm.PackageManager.NameNotFoundException;
+ import android.content.res.Resources;
+ import android.os.Bundle;
+ import android.os.UserHandle;
+@@ -257,19 +256,6 @@ public class SimStatus extends InstrumentedPreferenceActivity {
+             networktype = mTelephonyManager.getNetworkTypeName(actualVoiceNetworkType);
+         }
+ 
+-        boolean show4GForLTE = false;
+-        try {
+-            Context con = createPackageContext("com.android.systemui", 0);
+-            int id = con.getResources().getIdentifier("config_show4GForLTE",
+-                    "bool", "com.android.systemui");
+-            show4GForLTE = con.getResources().getBoolean(id);
+-        } catch (NameNotFoundException e) {
+-            Log.e(TAG, "NameNotFoundException for show4GFotLTE");
+-        }
+-
+-        if (networktype != null && networktype.equals("LTE") && show4GForLTE) {
+-            networktype = "4G";
+-        }
+         setSummaryText(KEY_NETWORK_TYPE, networktype);
+     }
+ 
+-- 
+1.9.1
+

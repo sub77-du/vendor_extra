@@ -1,0 +1,31 @@
+From 1f63bce6f529bfd731b4bbddde073c6b57df0697 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 09:38:58 -0500
+Subject: [PATCH] Break MSIM dependency on qci-telephony-framework
+
+If the provisioning state is invalid, the framework is most likely
+absent. Consider the card as provisioned to pass all relevant checks.
+
+Change-Id: I975ff156e4328e9d3f6e2626a863bbacb29e3337
+---
+ src/com/android/settings/sim/SimSettings.java | 4 ++++
+ 1 file changed, 4 insertions(+)
+
+diff --git a/src/com/android/settings/sim/SimSettings.java b/src/com/android/settings/sim/SimSettings.java
+index 7b2dd10..662c836 100644
+--- a/src/com/android/settings/sim/SimSettings.java
++++ b/src/com/android/settings/sim/SimSettings.java
+@@ -480,6 +480,10 @@ public class SimSettings extends RestrictedSettingsFragment implements Indexable
+                 loge("Failed to get pref, slotId: "+ mSlotId +" Exception: " + ex);
+             }
+ 
++            if (mUiccProvisionStatus[mSlotId] == INVALID_STATE) {
++                mUiccProvisionStatus[mSlotId] = PROVISIONED;
++            }
++
+             boolean isSubValid = isCurrentSubValid();
+             setEnabled(isSubValid);
+ 
+-- 
+1.9.1
+

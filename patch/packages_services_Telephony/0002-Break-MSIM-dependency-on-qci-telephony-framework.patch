@@ -1,0 +1,32 @@
+From 6859ff38665381505496e06d604099a71e401932 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 11:08:24 -0500
+Subject: [PATCH 2/4] Break MSIM dependency on qci-telephony-framework
+
+If the provisioning state is invalid, the framework is most likely
+absent. Consider the card as provisioned to pass all relevant checks.
+
+Change-Id: I71e170aa9bf872057cb0e75257cc712d500aa43b
+---
+ src/com/android/services/telephony/TelecomAccountRegistry.java | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/src/com/android/services/telephony/TelecomAccountRegistry.java b/src/com/android/services/telephony/TelecomAccountRegistry.java
+index 5dc6dcd..9118fe1 100644
+--- a/src/com/android/services/telephony/TelecomAccountRegistry.java
++++ b/src/com/android/services/telephony/TelecomAccountRegistry.java
+@@ -489,6 +489,11 @@ final class TelecomAccountRegistry {
+             } catch (NullPointerException ex) {
+                 Log.w(this, "Failed to get status for, slotId: "+ slotId +" Exception: " + ex);
+             }
++
++                if (provisionStatus == INVALID_STATE) {
++                    provisionStatus = PROVISIONED;
++                }
++
+             Log.d(this, "Phone with subscription id: " + subscriptionId +
+                             " slotId: " + slotId + " provisionStatus: " + provisionStatus);
+             if ((subscriptionId >= 0) && (provisionStatus == PROVISIONED)){
+-- 
+1.9.1
+

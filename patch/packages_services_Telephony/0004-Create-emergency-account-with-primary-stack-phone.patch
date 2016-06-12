@@ -1,0 +1,54 @@
+From 662f13cd99b4043c2fcc39c748032ace4952873a Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 11:54:09 -0500
+Subject: [PATCH 4/4] Create emergency account with primary stack phone.
+
+When creating emergency account associate the primary
+stack phone with it as emergency calls will be placed
+only on primary stack with no sim cards on the device.
+
+Change-Id: Id067c21208882a66014e33344d0802aa13f4d9aa
+CRs-Fixed: 965269
+---
+ .../android/services/telephony/TelecomAccountRegistry.java | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
+
+diff --git a/src/com/android/services/telephony/TelecomAccountRegistry.java b/src/com/android/services/telephony/TelecomAccountRegistry.java
+index 78490bb..400e414 100644
+--- a/src/com/android/services/telephony/TelecomAccountRegistry.java
++++ b/src/com/android/services/telephony/TelecomAccountRegistry.java
+@@ -465,6 +465,9 @@ final class TelecomAccountRegistry {
+ 
+         final boolean phoneAccountsEnabled = mContext.getResources().getBoolean(
+                 R.bool.config_pstn_phone_accounts_enabled);
++        int primaryStackId = 0;
++        IExtTelephony mExtTelephony =
++            IExtTelephony.Stub.asInterface(ServiceManager.getService("extphone"));
+ 
+         if (phoneAccountsEnabled) {
+             for (Phone phone : phones) {
+@@ -506,13 +509,18 @@ final class TelecomAccountRegistry {
+                     mAccounts.add(new AccountEntry(phone, false /* emergency */, false /* isDummy */));
+                 }
+         }
+-
++        try {
++                //get primary stack phone id.
++                primaryStackId = mExtTelephony.getPrimaryStackPhoneId();
++            } catch (RemoteException ex) {
++                Log.w(this, "Failed to get primary stack id");
++            }
+         // If we did not list ANY accounts, we need to provide a "default" SIM account
+         // for emergency numbers since no actual SIM is needed for dialing emergency
+         // numbers but a phone account is.
+         if (mAccounts.isEmpty()) {
+-            mAccounts.add(new AccountEntry(PhoneFactory.getDefaultPhone(), true /* emergency */,
+-                    false /* isDummy */));
++            mAccounts.add(new AccountEntry(PhoneFactory.getPhone(primaryStackId), true
++                    /* emergency */, false /* isDummy */));
+         }
+ 
+         // Add a fake account entry.
+-- 
+1.9.1
+

@@ -1,0 +1,27 @@
+From f4b84616faf89e002ba3476156f341e41d1c6152 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 09:50:17 -0500
+Subject: [PATCH] Add Manual Provisioning support
+
+* Add subStatus column to iSub table.
+
+Change-Id: I5c8f00bf1ccdb35f60b6447fdc24e1ca9e75cb5e
+---
+ src/com/android/providers/telephony/TelephonyProvider.java | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/com/android/providers/telephony/TelephonyProvider.java b/src/com/android/providers/telephony/TelephonyProvider.java
+index bf77aec..a679496 100644
+--- a/src/com/android/providers/telephony/TelephonyProvider.java
++++ b/src/com/android/providers/telephony/TelephonyProvider.java
+@@ -240,6 +240,7 @@ public class TelephonyProvider extends ContentProvider
+                     + SubscriptionManager.DATA_ROAMING + " INTEGER DEFAULT " + SubscriptionManager.DATA_ROAMING_DEFAULT + ","
+                     + SubscriptionManager.MCC + " INTEGER DEFAULT 0,"
+                     + SubscriptionManager.MNC + " INTEGER DEFAULT 0,"
++                    + SubscriptionManager.SUB_STATE + " INTEGER DEFAULT " + SubscriptionManager.ACTIVE  + ","
+                     + SubscriptionManager.CB_EXTREME_THREAT_ALERT + " INTEGER DEFAULT 1,"
+                     + SubscriptionManager.CB_SEVERE_THREAT_ALERT + " INTEGER DEFAULT 1,"
+                     + SubscriptionManager.CB_AMBER_ALERT + " INTEGER DEFAULT 1,"
+-- 
+1.9.1
+
