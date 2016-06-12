@@ -1,0 +1,30 @@
+From 0eeef4ddb0c99ffd5fc6b3ad1d7624a234200f4b Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Wed, 8 Jun 2016 15:55:09 -0500
+Subject: [PATCH 48/49] Add OpenDelta Updater
+
+Change-Id: I64b0869e2794dcf7cee6cefd3676a41a4c1ce4a9
+---
+ res/xml/device_info_settings.xml | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/res/xml/device_info_settings.xml b/res/xml/device_info_settings.xml
+index 3840b81..0e94661 100644
+--- a/res/xml/device_info_settings.xml
++++ b/res/xml/device_info_settings.xml
+@@ -41,9 +41,9 @@
+             android:key="duupdater"
+             android:title="@string/duupdater"
+             android:summary="@string/duupdater_summary">
+-            <intent android:action="android.intent.action.MAIN"
+-                    android:targetPackage="com.dirtyunicorns.duupdater"
+-                    android:targetClass="com.dirtyunicorns.duupdater.MainActivity" />
++            <intent android:action="android.settings.SYSTEM_UPDATE_SETTINGS"
++                    android:targetPackage="com.resurrection.ota"
++                    android:targetClass="com.resurrection.ota.MainActivity" />
+         </PreferenceScreen>
+ 
+         <!-- DU Share -->
+-- 
+1.9.1
+

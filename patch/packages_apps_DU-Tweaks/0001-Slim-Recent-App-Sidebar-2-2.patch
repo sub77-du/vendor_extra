@@ -1,0 +1,527 @@
+From 036c5d02e3bd6b10284b34d17d25f1102ebf3d6c Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 10 Jun 2016 19:44:09 -0500
+Subject: [PATCH] Slim Recent App Sidebar [2/2]
+
+One thing I was missing with SlimRecents was the possibility to launch your favorite apps
+from the recents screen. As SlimRecents covers only the half of the screen (more or less),
+there is enough space on the other edge to display an app sidebar, which I based on the
+ChameleonOS one.
+
+Changes to the ChameleonOS sidebar include:
+- No trigger areas, but show/hide with the SlimRecent screen
+- Adapted look and animation to SlimRecent
+- Longpress actions
+- Slimer settings using ActionListViewSettings, also added possibility to configure sidebar
+  size (roughly, as the size is adapted to the screen height in order to show full icons)
+  and colors
+- Currently no option to add folders to the sidebar, as this does not work with the current
+  ActionListViewSettings without further work
+
+Squashed commit:
+[2/2] Slim recent app sidebar: Setting to disable without removing items
+
+PS2: Add setting to not open simultaneously with recents in order to reduce recents lag
+when opening
+
+PS3: Some lines were to long
+
+Change-Id: I40a60bb16de3f84a65371b08074dec2efcfdc4ec
+---
+ res/values/strings.xml                             |  14 ++
+ res/xml/recent_app_sidebar_fragment.xml            |  30 +++
+ res/xml/recent_app_sidebar_settings.xml            |  55 ++++++
+ res/xml/recents.xml                                |  12 ++
+ .../dutweaks/dslv/ActionListViewSettings.java      |   8 +
+ .../dutweaks/fragments/RecentAppSidebar.java       | 205 +++++++++++++++++++++
+ .../fragments/RecentAppSidebarFragment.java        |  83 +++++++++
+ 7 files changed, 407 insertions(+)
+ create mode 100644 res/xml/recent_app_sidebar_fragment.xml
+ create mode 100644 res/xml/recent_app_sidebar_settings.xml
+ create mode 100644 src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebar.java
+ create mode 100644 src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebarFragment.java
+
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index f5e9d12..8a81f8e 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -1050,4 +1050,18 @@
+     <string name="screenshot_crop_behavior_title">Crop mode</string>
+     <string name="screenshot_crop_behavior_summary">Always use the cropped image inside the cropping area, even if the apply button hasn\'t been pressed</string>
+ 
++    <!-- Slim Recent App Sidebar  -->
++    <string name="recent_panel_category">Slim Recents</string>
++    <string name="recent_app_sidebar_title">App sidebar</string>
++    <string name="use_recent_app_sidebar">Enable recent app sidebar</string>
++    <string name="recent_app_sidebar_summary">Show app shortcuts on the other edge</string>
++    <string name="recent_app_sidebar_style_title">Sidebar style</string>
++    <string name="recent_app_sidebar_style_summary">Change recent app sidebar style</string>
++    <string name="recent_app_sidebar_hide_labels_title">Hide icon labels</string>
++    <string name="recent_app_sidebar_label_color_title">Label color</string>
++    <string name="recent_app_sidebar_bg_color_title">Background color</string>
++    <string name="recent_app_sidebar_scale_title">Size</string>
++    <string name="recent_app_sidebar_open_simultaneously_title">Open simultaneously with recents</string>
++    <string name="recent_app_sidebar_open_simultaneously_summary">Reduce recents opening lag by disabling this</string>
++
+ </resources>
+diff --git a/res/xml/recent_app_sidebar_fragment.xml b/res/xml/recent_app_sidebar_fragment.xml
+new file mode 100644
+index 0000000..fddb30c
+--- /dev/null
++++ b/res/xml/recent_app_sidebar_fragment.xml
+@@ -0,0 +1,30 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 Slimroms Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
++
++    <SwitchPreference
++            android:key="use_recent_app_sidebar"
++            android:title="@string/use_recent_app_sidebar"
++            android:defaultValue="true" />
++
++    <PreferenceScreen
++        android:fragment="com.dirtyunicorns.dutweaks.fragments.RecentAppSidebar"
++        android:key="recent_app_sidebar"
++        android:title="@string/recent_app_sidebar_style_title"
++        android:summary="@string/recent_app_sidebar_style_summary" />
++
++</PreferenceScreen>
+diff --git a/res/xml/recent_app_sidebar_settings.xml b/res/xml/recent_app_sidebar_settings.xml
+new file mode 100644
+index 0000000..cf62645
+--- /dev/null
++++ b/res/xml/recent_app_sidebar_settings.xml
+@@ -0,0 +1,55 @@
++<?xml version="1.0" encoding="utf-8"?>
++<!-- Copyright (C) 2015 The SlimRoms Project
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
++                  xmlns:settings="http://schemas.android.com/apk/res/com.android.settings"
++                  android:title="@string/recent_panel_category">
++
++    <SlimSeekBarPreference
++            android:key="recent_app_sidebar_scale"
++            android:title="@string/recent_app_sidebar_scale_title"
++            android:persistent="false" />
++
++    <SwitchPreference
++            android:key="recent_app_sidebar_disable_labels"
++            android:title="@string/recent_app_sidebar_hide_labels_title"
++            android:disableDependentsState="true"
++            android:defaultValue="false"
++            android:persistent="false" />
++
++    <net.margaritov.preference.colorpicker.ColorPickerPreference
++            android:key="recent_app_sidebar_label_color"
++            android:title="@string/recent_app_sidebar_label_color_title"
++            android:defaultValue="0x00ffffff"
++            alphaSlider="false"
++            android:persistent="false"
++            android:dependency="recent_app_sidebar_disable_labels" />
++
++    <net.margaritov.preference.colorpicker.ColorPickerPreference
++            android:key="recent_app_sidebar_bg_color"
++            android:title="@string/recent_app_sidebar_bg_color_title"
++            android:defaultValue="0x00ffffff"
++            alphaSlider="true"
++            android:persistent="false" />
++
++    <SwitchPreference
++            android:key="recent_app_sidebar_open_simultaneously"
++            android:title="@string/recent_app_sidebar_open_simultaneously_title"
++            android:summary="@string/recent_app_sidebar_open_simultaneously_summary"
++            android:defaultValue="true"
++            android:persistent="false" />
++
++</PreferenceScreen>
+diff --git a/res/xml/recents.xml b/res/xml/recents.xml
+index 4899996..1146d16 100644
+--- a/res/xml/recents.xml
++++ b/res/xml/recents.xml
+@@ -142,4 +142,16 @@
+ 
+         </PreferenceCategory>
+ 
++    <PreferenceScreen
++            android:dependency="slim_recents"
++            android:key="recent_app_sidebar_content"
++            android:fragment="com.dirtyunicorns.dutweaks.dslv.ActionListViewSettings"
++            android:title="@string/recent_app_sidebar_title"
++            android:summary="@string/recent_app_sidebar_summary">
++        <extra android:name="actionMode" android:value="7" />
++        <extra android:name="maxAllowedActions" android:value="-1" />
++        <extra android:name="useAppPickerOnly" android:value="true" />
++        <extra android:name="fragment" android:value="com.dirtyunicorns.dutweaks.fragments.RecentAppSidebarFragment" />
++    </PreferenceScreen>
++
+ </PreferenceScreen>
+diff --git a/src/com/dirtyunicorns/dutweaks/dslv/ActionListViewSettings.java b/src/com/dirtyunicorns/dutweaks/dslv/ActionListViewSettings.java
+index b0d90e6..a6bc7b6 100644
+--- a/src/com/dirtyunicorns/dutweaks/dslv/ActionListViewSettings.java
++++ b/src/com/dirtyunicorns/dutweaks/dslv/ActionListViewSettings.java
+@@ -92,6 +92,7 @@ public class ActionListViewSettings extends ListFragment implements
+     private static final int LOCKSCREEN_SHORTCUT   = 4;
+     private static final int POWER_MENU_SHORTCUT   = 5;
+     private static final int SHAKE_EVENTS_DISABLED = 6;
++    private static final int RECENT_APP_SIDEBAR    = 7;
+ 
+     private static final int DEFAULT_MAX_ACTION_NUMBER = 5;
+ 
+@@ -520,6 +521,9 @@ public class ActionListViewSettings extends ListFragment implements
+             case SHAKE_EVENTS_DISABLED:
+                 return ActionHelper.getDisabledShakeApps(mActivity);
+ */
++            case RECENT_APP_SIDEBAR:
++                return ActionHelper.getRecentAppSidebarConfigWithDescription(
++                        mActivity, mActionValuesKey, mActionEntriesKey);
+         }
+         return null;
+     }
+@@ -549,6 +553,9 @@ public class ActionListViewSettings extends ListFragment implements
+                 ActionHelper.setDisabledShakeApps(mActivity, actionConfigs, reset);
+                 break;
+ */
++            case RECENT_APP_SIDEBAR:
++                ActionHelper.setRecentAppSidebarConfig(mActivity, actionConfigs, reset);
++                break;
+         }
+     }
+ 
+@@ -714,6 +721,7 @@ public class ActionListViewSettings extends ListFragment implements
+                         case NAV_RING:
+                         case PIE:
+                         case PIE_SECOND:
++                        case RECENT_APP_SIDEBAR:
+                         default:
+                             actionMode = res.getString(R.string.shortcut_action_help_button);
+                             break;
+diff --git a/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebar.java b/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebar.java
+new file mode 100644
+index 0000000..9368dd7
+--- /dev/null
++++ b/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebar.java
+@@ -0,0 +1,205 @@
++/*
++ * Copyright (C) 2015 SlimRoms Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.dirtyunicorns.dutweaks.fragments;
++
++import android.app.AlertDialog;
++import android.content.DialogInterface;
++import android.os.Bundle;
++import android.preference.Preference;
++import android.preference.SlimSeekBarPreference;
++import android.preference.SwitchPreference;
++import android.provider.Settings;
++import android.view.Menu;
++import android.view.MenuInflater;
++import android.view.MenuItem;
++import com.android.settings.DialogCreatable;
++import com.android.settings.R;
++import com.android.settings.SettingsPreferenceFragment;
++import com.android.internal.logging.MetricsLogger;
++import net.margaritov.preference.colorpicker.ColorPickerPreference;
++
++public class RecentAppSidebar extends SettingsPreferenceFragment implements DialogCreatable,
++        Preference.OnPreferenceChangeListener {
++
++    private static final String TAG = "RecentAppSidebarSettings";
++
++    // Preferences
++    private static final String APP_SIDEBAR_HIDE_LABELS = "recent_app_sidebar_disable_labels";
++    private static final String APP_SIDEBAR_LABEL_COLOR = "recent_app_sidebar_label_color";
++    private static final String APP_SIDEBAR_BG_COLOR = "recent_app_sidebar_bg_color";
++    private static final String APP_SIDEBAR_SCALE = "recent_app_sidebar_scale";
++    private static final String APP_SIDEBAR_OPEN_SIMULTANEOUSLY =
++            "recent_app_sidebar_open_simultaneously";
++
++    private SlimSeekBarPreference mAppSidebarScale;
++    private SwitchPreference mAppSidebarHideLabels;
++    private ColorPickerPreference mAppSidebarLabelColor;
++    private ColorPickerPreference mAppSidebarBgColor;
++    private SwitchPreference mAppSidebarOpenSimultaneously;
++
++    private static final int MENU_RESET = Menu.FIRST;
++    private static final int DEFAULT_COLOR = 0x00ffffff;
++
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++        addPreferencesFromResource(R.xml.recent_app_sidebar_settings);
++        initializeAllPreferences();
++    }
++
++    @Override
++    protected int getMetricsCategory() {
++        return MetricsLogger.DIRTYTWEAKS;
++    }
++
++    public boolean onPreferenceChange(Preference preference, Object newValue) {
++        if (preference == mAppSidebarScale) {
++            int value = Integer.parseInt((String) newValue);
++            Settings.System.putInt(getContentResolver(),
++                    Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR, value);
++            return true;
++        } else if (preference == mAppSidebarHideLabels) {
++            Settings.System.putInt(getContentResolver(),
++                    Settings.System.RECENT_APP_SIDEBAR_DISABLE_LABELS,
++                    ((Boolean) newValue) ? 1 : 0);
++            return true;
++        } else if (preference == mAppSidebarLabelColor) {
++            String hex = ColorPickerPreference.convertToARGB(
++                    Integer.valueOf(String.valueOf(newValue)));
++            if (hex.equals("#00ffffff")) {
++                preference.setSummary(R.string.default_string);
++            } else {
++                preference.setSummary(hex);
++            }
++            int intHex = ColorPickerPreference.convertToColorInt(hex);
++            Settings.System.putInt(getContentResolver(),
++                    Settings.System.RECENT_APP_SIDEBAR_TEXT_COLOR,
++                    intHex);
++            return true;
++        } else if (preference == mAppSidebarBgColor) {
++            String hex = ColorPickerPreference.convertToARGB(
++                    Integer.valueOf(String.valueOf(newValue)));
++            if (hex.equals("#00ffffff")) {
++                preference.setSummary(R.string.default_string);
++            } else {
++                preference.setSummary(hex);
++            }
++            int intHex = ColorPickerPreference.convertToColorInt(hex);
++            Settings.System.putInt(getContentResolver(),
++                    Settings.System.RECENT_APP_SIDEBAR_BG_COLOR,
++                    intHex);
++            return true;
++        } else if (preference == mAppSidebarOpenSimultaneously) {
++            Settings.System.putInt(getContentResolver(),
++                    Settings.System.RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY,
++                    ((Boolean) newValue) ? 1 : 0);
++            return true;
++        }
++        return false;
++    }
++
++    @Override
++    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
++        menu.add(0, MENU_RESET, 0, R.string.reset)
++                .setIcon(com.android.internal.R.drawable.ic_menu_refresh)
++                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
++    }
++
++    @Override
++    public boolean onOptionsItemSelected(MenuItem item) {
++        switch (item.getItemId()) {
++            case MENU_RESET:
++                resetToDefault();
++                return true;
++            default:
++                return super.onContextItemSelected(item);
++        }
++    }
++
++    private void resetToDefault() {
++        AlertDialog.Builder alertDialog = new AlertDialog.Builder(getActivity());
++        alertDialog.setTitle(R.string.shortcut_action_reset);
++        alertDialog.setMessage(R.string.reset_message);
++        alertDialog.setPositiveButton(R.string.ok, new DialogInterface.OnClickListener() {
++            public void onClick(DialogInterface dialog, int id) {
++                resetValues();
++            }
++        });
++        alertDialog.setNegativeButton(R.string.cancel, null);
++        alertDialog.create().show();
++    }
++
++    private void resetValues() {
++        Settings.System.putInt(getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_TEXT_COLOR, DEFAULT_COLOR);
++        mAppSidebarLabelColor.setNewPreviewColor(DEFAULT_COLOR);
++        mAppSidebarLabelColor.setSummary(R.string.default_string);
++        Settings.System.putInt(getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_BG_COLOR, DEFAULT_COLOR);
++        mAppSidebarBgColor.setNewPreviewColor(DEFAULT_COLOR);
++        mAppSidebarBgColor.setSummary(R.string.default_string);
++    }
++
++    private void initializeAllPreferences() {
++        mAppSidebarScale = (SlimSeekBarPreference) findPreference(APP_SIDEBAR_SCALE);
++        mAppSidebarScale.setInterval(5);
++        mAppSidebarScale.setDefault(100);
++        mAppSidebarScale.minimumValue(60);
++        mAppSidebarScale.setOnPreferenceChangeListener(this);
++        mAppSidebarScale.setInitValue(Settings.System.getInt(getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR, 100) - 60);
++
++        mAppSidebarHideLabels = (SwitchPreference) findPreference(APP_SIDEBAR_HIDE_LABELS);
++        mAppSidebarHideLabels.setOnPreferenceChangeListener(this);
++        mAppSidebarHideLabels.setChecked(Settings.System.getInt(getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_DISABLE_LABELS, 0) == 1);
++
++        mAppSidebarOpenSimultaneously =
++                (SwitchPreference) findPreference(APP_SIDEBAR_OPEN_SIMULTANEOUSLY);
++        mAppSidebarOpenSimultaneously.setOnPreferenceChangeListener(this);
++        mAppSidebarOpenSimultaneously.setChecked(Settings.System.getInt(getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY, 1) == 1);
++
++        mAppSidebarLabelColor = (ColorPickerPreference) findPreference(APP_SIDEBAR_LABEL_COLOR);
++        mAppSidebarLabelColor.setOnPreferenceChangeListener(this);
++        final int intColorSidebarLabel = Settings.System.getInt(getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_TEXT_COLOR, 0x00ffffff);
++        String hexColorSidebarLabel = String.format("#%08x", (0x00ffffff & intColorSidebarLabel));
++        if (hexColorSidebarLabel.equals("#00ffffff")) {
++            mAppSidebarLabelColor.setSummary(R.string.default_string);
++        } else {
++            mAppSidebarLabelColor.setSummary(hexColorSidebarLabel);
++        }
++        mAppSidebarLabelColor.setNewPreviewColor(intColorSidebarLabel);
++
++        mAppSidebarBgColor =
++                (ColorPickerPreference) findPreference(APP_SIDEBAR_BG_COLOR);
++        mAppSidebarBgColor.setOnPreferenceChangeListener(this);
++        final int intColorSidebarBg = Settings.System.getInt(getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_BG_COLOR, 0x00ffffff);
++        String hexColorSidebarBg = String.format("#%08x", (0x00ffffff & intColorSidebarBg));
++        if (hexColorSidebarBg.equals("#00ffffff")) {
++            mAppSidebarBgColor.setSummary(R.string.default_string);
++        } else {
++            mAppSidebarBgColor.setSummary(hexColorSidebarBg);
++        }
++        mAppSidebarBgColor.setNewPreviewColor(intColorSidebarBg);
++
++        // Enable options menu for color reset
++        setHasOptionsMenu(true);
++    }
++}
+diff --git a/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebarFragment.java b/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebarFragment.java
+new file mode 100644
+index 0000000..fac1f3f
+--- /dev/null
++++ b/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebarFragment.java
+@@ -0,0 +1,83 @@
++/*
++ * Copyright (C) 2013-2015 Slimroms
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.dirtyunicorns.dutweaks.fragments;
++
++import android.os.Bundle;
++import android.preference.Preference;
++import android.preference.SwitchPreference;
++import android.provider.Settings;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.view.ViewGroup;
++import android.widget.ListView;
++
++import com.android.settings.R;
++import com.android.settings.SettingsPreferenceFragment;
++import com.android.internal.logging.MetricsLogger;
++
++public class RecentAppSidebarFragment extends SettingsPreferenceFragment implements
++        Preference.OnPreferenceChangeListener {
++
++    // Preferences
++    private static final String USE_RECENT_APP_SIDEBAR = "use_recent_app_sidebar";
++
++    private SwitchPreference mUseSidebar;
++
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++
++        addPreferencesFromResource(R.xml.recent_app_sidebar_fragment);
++        initializeAllPreferences();
++    }
++
++    @Override
++    protected int getMetricsCategory() {
++        return MetricsLogger.DIRTYTWEAKS;
++    }
++
++    @Override
++    public View onCreateView(LayoutInflater inflater,
++                             ViewGroup container, Bundle savedInstanceState) {
++        final View view = super.onCreateView(inflater, container, savedInstanceState);
++        final ListView list = (ListView) view.findViewById(android.R.id.list);
++        // our container already takes care of the padding
++        if (list != null) {
++            int paddingTop = list.getPaddingTop();
++            int paddingBottom = list.getPaddingBottom();
++            list.setPadding(0, paddingTop, 0, paddingBottom);
++        }
++        return view;
++    }
++
++    public boolean onPreferenceChange(Preference preference, Object newValue) {
++        if (preference == mUseSidebar) {
++            Settings.System.putInt(getContentResolver(),
++                    Settings.System.USE_RECENT_APP_SIDEBAR,
++                    ((Boolean) newValue) ? 1 : 0);
++            return true;
++        }
++        return false;
++    }
++
++    private void initializeAllPreferences() {
++        mUseSidebar = (SwitchPreference) findPreference(USE_RECENT_APP_SIDEBAR);
++        mUseSidebar.setOnPreferenceChangeListener(this);
++        mUseSidebar.setChecked(Settings.System.getInt(getContentResolver(),
++                Settings.System.USE_RECENT_APP_SIDEBAR, 1) == 1);
++    }
++}
+-- 
+1.9.1
+

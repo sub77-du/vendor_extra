@@ -1,0 +1,224 @@
+From 9574a63e472376f638cfa370ac0d335a4189bc81 Mon Sep 17 00:00:00 2001
+From: Janson Kang <temasek71@gmail.com>
+Date: Tue, 23 Dec 2014 23:15:00 +0800
+Subject: [PATCH 34/49] Intergrate Viper4Android into settings
+
+Icon is temporary.
+
+Signed-off-by: Janson Kang <temasek71@gmail.com>
+Signed-off-by: Corey Edwards <ensabahnur16@gmail.com>
+Signed-off-by: sub77 <sub77@ymail.com>
+
+Conflicts:
+	res/values/screwd_strings.xml
+	res/xml/dashboard_categories.xml
+	src/com/android/settings/SettingsActivity.java
+
+Change-Id: Iad26538f83ca3f6192234704dfd0f058f11e3cc0
+---
+ res/drawable-hdpi/ic_settings_v4a.png          | Bin 0 -> 1219 bytes
+ res/drawable-mdpi/ic_settings_v4a.png          | Bin 0 -> 626 bytes
+ res/drawable-xhdpi/ic_settings_v4a.png         | Bin 0 -> 1633 bytes
+ res/drawable-xxhdpi/ic_settings_v4a.png        | Bin 0 -> 1633 bytes
+ res/values/du_strings.xml                      |   1 +
+ res/xml/dashboard_categories.xml               |  10 ++++++++++
+ src/com/android/settings/SettingsActivity.java |   9 +++++++++
+ 7 files changed, 20 insertions(+)
+ create mode 100644 res/drawable-hdpi/ic_settings_v4a.png
+ create mode 100644 res/drawable-mdpi/ic_settings_v4a.png
+ create mode 100644 res/drawable-xhdpi/ic_settings_v4a.png
+ create mode 100644 res/drawable-xxhdpi/ic_settings_v4a.png
+
+diff --git a/res/drawable-hdpi/ic_settings_v4a.png b/res/drawable-hdpi/ic_settings_v4a.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..626de85c5394cb5afc2411e4dd0abe32ce8463df
+GIT binary patch
+literal 1219
+zcmV;!1U&nRP)<h;3K|Lk000e1NJLTq001xm001xu1^@s6R|5Hm00006VoOIv0RI60
+z0RN!9r;`8x010qNS#tmY3ljhU3ljkVnw%H_000McNliru-U}K404eS!$$0<(1W-vt
+zK~!ko?but0RaF=V@ZXFxj+Z3OTT^zki&2P{MHizeN~4P;MFbHM)I;nbA|KpRQkrdo
+zpa<DOP!B;AA(jsrVZCJ%M3{mYWJW|HN|t%6ab`{r^Bvuc=bSm`ct#1%A2#Q#wf0`?
+zyMOEZXrqlb+Gyi{i9Bn`HXS1#lBC7)SahK~o-y(C#ypfT4p+w70Di_1bQaG2CH@cK
+zIQr3teo0zt4Ff|&Ps8Q76xRo_S6~*#22tI^_Ub6im4d+GMD@kozt|JcPVB}u?3Sbl
+zPH3tq$eIk4rJiSF@Bp62ooB(wzQEh~td>SPPnkK%=}Y+dED;a);!~`y<ue^sq`wrO
+zRCvE1hw)FSegH=c=CK=pR20n6JH5CFgK_qR@RJE)j^pEZI2KFNP4$}46l}rOF>@3j
+z;Ct-HUL3%|u;agm*>|Z<pX<Q6=)p8h!c<&{d3ZYf2=+<RnUyx|sxWt5NU4lfcvF%N
+z)D@{}qg42=BuW2_(cTLC?!$^;Vun0hC`rE=*$0LsQB>m=Njgw9Zr4wIeczotXJcr;
+zjJfqW@yLEMwUvpeuy6M;#)i{2Sn15ph9s6}^RY{w-5ulBWaB(riS_cVqsE>c&1#^0
+z$at*BWPB;l?l>W>W*He0!ee+958|0dO|lUU9E-%(A2XZe*?sb?ry*_RSyA$9@KLOM
+ziw_%>L03cSPSTz7Yymchvv0&YdG-`~<=L%Rf}1ciBFK@rB77AZ{7I4?lxJ)4T<rdX
+zB)z2>B{u2<B<Xe(4_g{JVjJGa!*Ne4$MA``0n70nw#u`01>(2kwq{MSvk99eNq1m=
+zWYjLqiELUAF2f^*@m-SiNV6fivq{J6#yd@Ye=1g=P9W%PBIHfMuCVh~;8}ULs@a6t
+zj08W&#Vx*hzAVpPITKF&8g3q?>+>>scGYN_&;^CaF&dbNwWDc5kH__QG_gpYT{~I~
+ztf?};0=HvBo%<|~+In@B_19a?z+hzG?h0$mC21x}zs93ck<})CsIuBBNmoYl8;-g1
+zY(i@pU{RH|%>^ev9@SYb>>pMD^;LN1yr|4t#y|-RYDA9iaPn*F2(L>EH`u9|QKg`o
+zG(u@w^D@^_p^%?m<@<;5qdYqpW$3gz;{B44{0v-DMW|y#^F=1cR7!T07&sP0mu-Ib
+z2=|=X4Mv)Ib-XhW7r=3axjpr2U~9BSX2tleh|y;f85R~8I3`IqjO+tL4z@4aC}s5G
+zoM;dBRdKvlpuB%S?vKi^?1L{hRA)w8@jX20>|;Hi2-800%3Z5BIu6V5Lij+BdYZwf
+zkHP5r{f&3=h9o`Is0PYRbcG4sgBuOC%%_J>Obkb#9BS@}HetQy0*8XwL(u~|997$n
+zC_(o~(&M$7XN^lV&w3(co*%w3CkX0^c4TRUobr1F3HU9N->*UJKovnY-$1L<H5(m_
+h_Wo_O(MB6B$A4KoN1~5Oa0dVY002ovPDHLkV1k`>K1~1s
+
+literal 0
+HcmV?d00001
+
+diff --git a/res/drawable-mdpi/ic_settings_v4a.png b/res/drawable-mdpi/ic_settings_v4a.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..9a59e7ce73774a4abe58b74f66e9b9d8cb5623ed
+GIT binary patch
+literal 626
+zcmV-&0*(ENP)<h;3K|Lk000e1NJLTq000;O000;W1^@s6;CDUv00006VoOIv0RI60
+z0RN!9r;`8x010qNS#tmY3ljhU3ljkVnw%H_000McNliru-U}K40SZ-GiAn$f0sl!v
+zK~zY`?bT0+O>q<l@XtImh|yp$6J<n6HiLzQqzp>Qf-L-7Oi9vRu#s-rS^PG(zZJ#8
+z&cdXmEW}cT%`_G$FMn!C8YUTIo`v5V*Yh6pG%GoEJHLDG@80kEea|`H%YSRyVwl!<
+zTkCA=7Q-_1U<o>~03|HPD26eS{Cm7W8P72$2C^KqOd@AFF`UJ5%)`tka<3%dGPcX|
+z*VP9th2w3(os`uxJjN@$#3#H-r>I~Sy3meptitN#pQ2Zmf3BtIaPob!eDE*$Z^Zz%
+zVI_v7jH)&}`C&1%i(&U9ef0`ojm5A?3_Y@Z93L<vU1|Y}e6GPYG4#vw$%6f4-)puQ
+zgE-XaVD-AFB+KuMVGpi~VN;6lMJK-CCeGs$Zlhsuml|@K<pX$tqv`5QPuj36@jV}>
+zWO=1|fEX@d!xYMUR}9_F0E~;_B#un6e-`3mGXNbpk=7G<gpps8;2z$k`<-G~n;PVg
+z085iZz;#)^9%pLy49N10I9-Sx!`I&dRHu3_=A`uwF>J-bn)mv|unzkQvEF(B#Wo#E
+zzQ1PpZZ+WjVNGmBl8@0MrNt9mPTF%Iaan0n?0V9GUXkVH>ZF$nYFfr-oWqkOa1&Gb
+z_*jzc8`z)JxJIsvlKtbpB^A3X4OClAz24#@hGqFk!|zP{U+tf>Z&}}sjtEjT^8f$<
+M07*qoM6N<$f>MMZz5oCK
+
+literal 0
+HcmV?d00001
+
+diff --git a/res/drawable-xhdpi/ic_settings_v4a.png b/res/drawable-xhdpi/ic_settings_v4a.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..ee445afa75962e4600a5c0c26c6cebb2b6919a6c
+GIT binary patch
+literal 1633
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/res/drawable-xxhdpi/ic_settings_v4a.png b/res/drawable-xxhdpi/ic_settings_v4a.png
+new file mode 100644
+index 0000000000000000000000000000000000000000..30f74f5ead833ba0d6f05346f0de2961afc30078
+GIT binary patch
+literal 1633
+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
+
+literal 0
+HcmV?d00001
+
+diff --git a/res/values/du_strings.xml b/res/values/du_strings.xml
+index b2dcbbe..302aa02 100644
+--- a/res/values/du_strings.xml
++++ b/res/values/du_strings.xml
+@@ -71,6 +71,7 @@
+     <string name="header_category_custom">Customization</string>
+     <string name="custom_title">Dirty Tweaks</string>
+     <string name="themes_settings_title">Themes</string>
++    <string name="viper_title">Viper4Android</string>
+ 
+     <!-- DU Changelog -->
+     <string name="duchangelog">Changelog</string>
+diff --git a/res/xml/dashboard_categories.xml b/res/xml/dashboard_categories.xml
+index 9c5077f..d00094f 100644
+--- a/res/xml/dashboard_categories.xml
++++ b/res/xml/dashboard_categories.xml
+@@ -120,6 +120,16 @@
+             </intent>
+         </dashboard-tile>
+ 
++        <!-- Viper4Android -->
++        <dashboard-tile
++                android:id="@+id/viper_settings"
++                android:title="@string/viper_title"
++                android:icon="@drawable/ic_settings_v4a" >
++                <intent
++                    android:action="android.intent.action.MAIN"
++                    android:targetClass="com.vipercn.viper4android_v2.activity.ViPER4Android"
++                    android:targetPackage="com.vipercn.viper4android_v2" />
++        </dashboard-tile>
+     </dashboard-category>
+ 
+     <!-- DEVICE -->
+diff --git a/src/com/android/settings/SettingsActivity.java b/src/com/android/settings/SettingsActivity.java
+index 5cfbbe4..4ff0c2e 100644
+--- a/src/com/android/settings/SettingsActivity.java
++++ b/src/com/android/settings/SettingsActivity.java
+@@ -1325,6 +1325,15 @@ public class SettingsActivity extends Activity
+                                         PackageManager.FEATURE_NFC_HOST_CARD_EMULATION)) {
+                             removeTile = true;
+                         }
++                 } else if (id == R.id.viper_settings) {
++                     boolean supported = false;
++                     try {
++                         supported = (getPackageManager().getPackageInfo("com.vipercn.viper4android_v2", 0).versionCode > 0);
++                     } catch (PackageManager.NameNotFoundException e) {
++                     }
++                     if (!supported) {
++                         removeTile = true;
++                     }
+                     }
+                 } else if (id == R.id.print_settings) {
+                     boolean hasPrintingSupport = getPackageManager().hasSystemFeature(
+-- 
+1.9.1
+
