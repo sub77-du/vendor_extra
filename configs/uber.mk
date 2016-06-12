@@ -7,7 +7,7 @@ ifeq (Linux,$(UNAME))
 endif
 
 # Disable jack building to fix clang errors
-export ANDROID_COMPILE_WITH_JACK := false
+# export ANDROID_COMPILE_WITH_JACK := false
 
 ifeq (linux,$(HOST_OS))
 ifeq (arm,$(TARGET_ARCH))
