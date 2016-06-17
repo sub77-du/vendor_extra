@@ -21,7 +21,7 @@ index 59fbc56..e9be8e1 100644
      *     '5' - APPSTATE_READY
      */
      int getUiccApplicationState(int slotId, int appIndex);
-+ 
++
 +    /**
 +    * Get primary stack phone id.
 +    * @param - void

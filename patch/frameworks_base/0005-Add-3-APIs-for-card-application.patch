@@ -59,7 +59,7 @@ index 31cb58f..59fbc56 100644
 +    *     '5' - APPSTATE_READY
 +    */
 +    int getUiccApplicationState(int slotId, int appIndex);
-+    
++
  }
 -- 
 1.9.1
