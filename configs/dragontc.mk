@@ -19,7 +19,7 @@ ifeq (1,$(words $(filter 3.9,$(TARGET_CLANG_VERSION_EXP))))
 	DTC_PATH := prebuilts/clang/linux-x86/host/$(TARGET_DRAGONTC_VERSION)
 	DTC_VER := $(shell cat $(DTC_PATH)/VERSION)
 	export $(DTC_VER)
-	PRODUCT_PROPERTY_OVERRIDES += ro.dtc.version=$(DTC_VER)
+	ADDITIONAL_BUILD_PROPERTIES += ro.dtc.version=$(DTC_VER)
 endif
 
 endif
