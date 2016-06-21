@@ -1,0 +1,48 @@
+From e9d1d3f4eb8c5fcde26fabfb7757b45fb3ec554e Mon Sep 17 00:00:00 2001
+From: Deepak Kundra <deepakkundra@gmail.com>
+Date: Thu, 19 Nov 2015 19:23:53 -0800
+Subject: [PATCH] DB: Add key's for new DB items
+
+Change-Id: Ic50b50074c73a2b421250a0b0d1b5446c016ce1b
+---
+ src/java/android/provider/Telephony.java | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/src/java/android/provider/Telephony.java b/src/java/android/provider/Telephony.java
+index 5542faf..b133a32 100644
+--- a/src/java/android/provider/Telephony.java
++++ b/src/java/android/provider/Telephony.java
+@@ -2850,6 +2850,30 @@ public final class Telephony {
+         public static final String EDITED = "edited";
+ 
+         /**
++         * <P>Type: INTEGER (boolean)</P>
++         * @hide
++         */
++        public static final String READ_ONLY = "read_only";
++
++        /**
++         * <P>Type: TEXT</P>
++         * @hide
++         */
++        public static final String PPP_NUMBER =  "ppp_number";
++
++        /**
++         * <P>Type: TEXT</P>
++         * @hide
++         */
++        public static final String LOCALIZED_NAME = "localized_name";
++
++        /**
++         * <P>Type: TEXT</P>
++         * @hide
++         */
++        public static final String VISIT_AREA = "visit_area";
++
++        /**
+          * Following are possible values for the EDITED field
+          * @hide
+          */
+-- 
+1.9.1
+

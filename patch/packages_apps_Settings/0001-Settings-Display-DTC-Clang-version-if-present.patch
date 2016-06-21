@@ -1,9 +1,9 @@
-From 57e73053ae1eee4b177fd86294683c7dc510fc78 Mon Sep 17 00:00:00 2001
+From cc2b73fed66a111ffc0d5137c2101d8f1c85e1df Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Sun, 12 Jun 2016 00:25:34 -0500
-Subject: [PATCH] Settings: Display DTC Clang version if present
+Date: Fri, 17 Jun 2016 07:11:05 -0500
+Subject: [PATCH] Settings-Display-DTC-Clang-version-if-present
 
-Change-Id: I27384edaa6beb23378a9447d18388cb40f6fe928
+Change-Id: Id4a4e92c262f4adfe3598ea06c6a49c49d3c8f8c
 ---
  res/values/du_strings.xml                        | 4 ++++
  res/xml/device_info_settings.xml                 | 7 +++++++
@@ -11,12 +11,12 @@ Change-Id: I27384edaa6beb23378a9447d18388cb40f6fe928
  3 files changed, 18 insertions(+)
 
 diff --git a/res/values/du_strings.xml b/res/values/du_strings.xml
-index 7f45a1e..ebccfb2 100644
+index 885f5a3..81c4bd7 100644
 --- a/res/values/du_strings.xml
 +++ b/res/values/du_strings.xml
-@@ -378,4 +378,8 @@
-     <string name="fourhalf_second">4.5 s</string>
-     <string name="five_second">5 s</string>
+@@ -383,4 +383,8 @@
+     <!-- Volume settings - Volume adjustment sound -->
+     <string name="volume_adjust_sounds_title">Volume adjustment sounds</string>
  
 +    <!-- Clang version -->
 +    <string name="dtc_version">Clang</string>

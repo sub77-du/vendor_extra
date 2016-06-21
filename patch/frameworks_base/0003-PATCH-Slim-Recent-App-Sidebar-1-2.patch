@@ -1,7 +1,7 @@
-From 261f74ad6f26ae4a003c4f42027b60361e0aeb24 Mon Sep 17 00:00:00 2001
+From 6e47013e7d58747e6119dc41dfbf11b999c276b5 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Sat, 11 Jun 2016 08:52:09 -0500
-Subject: [PATCH] Slim Recent App Sidebar [1/2]
+Date: Tue, 21 Jun 2016 16:04:54 -0500
+Subject: [PATCH 3/3] [PATCH] Slim Recent App Sidebar [1/2]
 
 One thing I was missing with SlimRecents was the possibility to launch your favorite apps
 from the recents screen. As SlimRecents covers only the half of the screen (more or less),
@@ -28,10 +28,8 @@ Slim Recent App Sidebar: Queue apps to launch on recents close by swiping left/r
 PS2: Add setting to not open simultaneously with recents in order to reduce recents lag
 when opening
 
+Change-Id: I50bebe83ee33099dc532a94a7b5258a775174fda
 PS3: Some lines were to long
-
-Change-Id: I291474f1d427c9e302204ece476f733395876d35
-Signed-off-by: sub77 <sub77@ymail.com>
 ---
  core/java/android/provider/Settings.java           |  52 +++
  .../com/android/internal/util/du/ActionHelper.java |  34 ++
@@ -46,12 +44,12 @@ Signed-off-by: sub77 <sub77@ymail.com>
  create mode 100644 packages/SystemUI/src/com/android/systemui/slimrecent/AppSidebar.java
 
 diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
-index 89f85e5..71155e4 100644
+index 8569678..f63166a 100644
 --- a/core/java/android/provider/Settings.java
 +++ b/core/java/android/provider/Settings.java
-@@ -4671,6 +4671,58 @@ public final class Settings {
+@@ -4677,6 +4677,58 @@ public final class Settings {
           */
-         public static final String RECENT_CARD_TEXT_COLOR = "recent_card_text_color";
+         public static final String VOLUME_ADJUST_SOUNDS_ENABLED = "volume_adjust_sounds_enabled";
  
 +         /**
 +         * Whether to use slim recent app sidebar
@@ -167,12 +165,12 @@ index 0000000..4ffaee6
 +        android:layout_width="wrap_content"
 +        android:layout_height="match_parent" />
 diff --git a/packages/SystemUI/res/values/du_dimens.xml b/packages/SystemUI/res/values/du_dimens.xml
-index 57e7082..38ba7b7 100644
+index 8b0de4f..0eee4fc 100644
 --- a/packages/SystemUI/res/values/du_dimens.xml
 +++ b/packages/SystemUI/res/values/du_dimens.xml
 @@ -89,4 +89,9 @@
      <dimen name="crop_buttons">48dp</dimen>
-     <dimen name="crop_color_rect">32dp</dimen>
+     <dimen name="crop_buttons_inlet">32dp</dimen>
  
 +    <!-- Slim recent app sidebar -->
 +    <dimen name="recent_app_sidebar_item_size">60dp</dimen>

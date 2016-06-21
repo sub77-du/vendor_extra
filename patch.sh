@@ -5,8 +5,7 @@ build_root=$(pwd) # vendorsetup.sh is sourced by build/envsetup.sh in root of an
 echo Touching prebuilts/qemu-kernel/arm/LINUX_KERNEL_COPYING
 mkdir -p prebuilts/qemu-kernel/arm/
 touch prebuilts/qemu-kernel/arm/LINUX_KERNEL_COPYING
-
-echo "Applying patches"
+echo -e ${CL_RED}"Applying patches"${CL_RST}
 patches_path="$build_root/vendor/extra/patch/"
 pushd "$patches_path" > /dev/null
 unset repos
@@ -34,7 +33,8 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
 		  if [ "$commit_id" = "$patch_id" ]; then
 			  echo ', patch matches'
 		  else
-			  echo ', PATCH MISMATCH!'
+		  echo -e ${CL_RED}"PATCH MISMATCH!: done"${CL_RST}
+			  #echo ', PATCH MISMATCH!'
 			  sed '0,/^$/d' $absolute_patch_path|head -n -3  > /tmp/patch
 			  git show --stat $commit_hash -p --pretty=format:%b > /tmp/commit
 			  diff -u /tmp/patch /tmp/commit

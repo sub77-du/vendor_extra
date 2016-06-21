@@ -1,0 +1,128 @@
+From 4242f7044c8a1d2c4b0ca68644ab96dcc729fa9b Mon Sep 17 00:00:00 2001
+From: Rakesh Pallerla <rakesh@codeaurora.org>
+Date: Mon, 28 Jul 2014 16:04:20 +0530
+Subject: [PATCH] Add Manual Provisioning Support
+
+* Add status variable in SubInfoRecord.
+* Add new APIs in SubscriptionManager to activate/deactivate sub.
+* Add new APIs to get and set subStatus.
+
+Change-Id: I6d0f43dab7bf5dde759d4ced3c9d8e70dfb84dd2
+DELETED:telephony/java/android/telephony/SubInfoRecord.java
+---
+ .../android/telephony/SubscriptionManager.java     | 53 ++++++++++++++++++++++
+ .../java/com/android/internal/telephony/ISub.aidl  |  8 ++++
+ .../android/internal/telephony/PhoneConstants.java |  3 +-
+ 3 files changed, 63 insertions(+), 1 deletion(-)
+ mode change 100644 => 100755 telephony/java/android/telephony/SubscriptionManager.java
+ mode change 100644 => 100755 telephony/java/com/android/internal/telephony/PhoneConstants.java
+
+diff --git a/telephony/java/android/telephony/SubscriptionManager.java b/telephony/java/android/telephony/SubscriptionManager.java
+old mode 100644
+new mode 100755
+index 32b7383..719af50
+--- a/telephony/java/android/telephony/SubscriptionManager.java
++++ b/telephony/java/android/telephony/SubscriptionManager.java
+@@ -121,6 +121,16 @@ public class SubscriptionManager {
+     public static final int SIM_NOT_INSERTED = -1;
+ 
+     /**
++     * The activation state of SIM/sub.
++     * <P>Type: INTEGER (int)</P>
++     */
++    public static final String SUB_STATE = "sub_state";
++
++    public static final int INACTIVE = 0;
++    public static final int ACTIVE = 1;
++    public static final int SUB_CONFIGURATION_IN_PROGRESS = 2;
++
++    /**
+      * TelephonyProvider column name for user displayed name.
+      * <P>Type: TEXT (String)</P>
+      */
+@@ -1117,6 +1127,49 @@ public class SubscriptionManager {
+         return phoneId >= 0 && phoneId < TelephonyManager.getDefault().getPhoneCount();
+     }
+ 
++    public static void activateSubId(int subId) {
++        logd("activateSubId sub id = " + subId);
++        try {
++            getISubInfo().activateSubId(subId);
++        } catch (RemoteException ex) {
++            return;
++        }
++    }
++
++    public static void deactivateSubId(int subId) {
++        logd("deactivateSubId sub id = " + subId);
++        try {
++            getISubInfo().deactivateSubId(subId);
++        } catch (RemoteException ex) {
++            return;
++        }
++    }
++
++    public static int getSubState(int subId) {
++        logd("getSubState sub id = " + subId);
++        try {
++            return getISubInfo().getSubState(subId);
++        } catch (RemoteException ex) {
++            return INACTIVE;
++        }
++    }
++
++    public static int setSubState(int subId, int subState) {
++        logd("setSubState sub id = " + subId + " state = " + subState);
++        try {
++            return getISubInfo().setSubState(subId, subState);
++        } catch (RemoteException ex) {
++            return INACTIVE;
++        }
++    }
++
++   /**
++    @hide
++    */
++    private static ISub getISubInfo() {
++        return ISub.Stub.asInterface(ServiceManager.getService("isub"));
++    }
++
+     /** @hide */
+     public static void putPhoneIdAndSubIdExtra(Intent intent, int phoneId) {
+         int[] subIds = SubscriptionManager.getSubId(phoneId);
+diff --git a/telephony/java/com/android/internal/telephony/ISub.aidl b/telephony/java/com/android/internal/telephony/ISub.aidl
+index f6aef08..1323258 100755
+--- a/telephony/java/com/android/internal/telephony/ISub.aidl
++++ b/telephony/java/com/android/internal/telephony/ISub.aidl
+@@ -183,4 +183,12 @@ interface ISub {
+     int getSimStateForSlotIdx(int slotIdx);
+ 
+     boolean isActiveSubId(int subId);
++
++    void activateSubId(int subId);
++
++    void deactivateSubId(int subId);
++
++    int setSubState(int subId, int subStatus);
++
++    int getSubState(int subId);
+ }
+diff --git a/telephony/java/com/android/internal/telephony/PhoneConstants.java b/telephony/java/com/android/internal/telephony/PhoneConstants.java
+old mode 100644
+new mode 100755
+index 572cc6f..5fd7d5e
+--- a/telephony/java/com/android/internal/telephony/PhoneConstants.java
++++ b/telephony/java/com/android/internal/telephony/PhoneConstants.java
+@@ -183,7 +183,8 @@ public class PhoneConstants {
+     public enum CardUnavailableReason {
+         REASON_CARD_REMOVED,
+         REASON_RADIO_UNAVAILABLE,
+-        REASON_SIM_REFRESH_RESET
++        REASON_SIM_REFRESH_RESET,
++        REASON_APM_SIM_POWER_DOWN
+     };
+ 
+     // Initial MTU value.
+-- 
+1.9.1
+

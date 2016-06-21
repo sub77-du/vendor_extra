@@ -1,0 +1,126 @@
+From 4e96928f87e288f4b2b36b47bf2e44782d4261b5 Mon Sep 17 00:00:00 2001
+From: Chirayu Desai <chirayudesai1@gmail.com>
+Date: Thu, 23 Jul 2015 01:04:17 +0530
+Subject: [PATCH] Add the user set network mode to the siminfo table
+
+* To track what the user set for the particular sub independent
+  of the currently set network mode (i.e. PREFERRED_NETWORK_MODE)
+* Useful on MSIM where the modem may only support 2G on one of the slots,
+  so the preferred network mode (and the NETWORK_MODE column) would
+  not always reflect the user desired network mode.
+
+Change-Id: I69d730e03a075b2684ca03a7df0086d95e0e329f
+Ref: CYNGNOS-291
+---
+ .../statusbar/policy/NetworkControllerImpl.java    |  2 +-
+ .../java/android/telephony/SubscriptionInfo.java   | 22 +++++++++++++++++++---
+ .../android/telephony/SubscriptionManager.java     |  7 +++++++
+ 3 files changed, 27 insertions(+), 4 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/statusbar/policy/NetworkControllerImpl.java b/packages/SystemUI/src/com/android/systemui/statusbar/policy/NetworkControllerImpl.java
+index 8fbf4b6..bf7e489 100644
+--- a/packages/SystemUI/src/com/android/systemui/statusbar/policy/NetworkControllerImpl.java
++++ b/packages/SystemUI/src/com/android/systemui/statusbar/policy/NetworkControllerImpl.java
+@@ -786,7 +786,7 @@ public class NetworkControllerImpl extends BroadcastReceiver
+ 
+     private SubscriptionInfo addSignalController(int id, int simSlotIndex) {
+         SubscriptionInfo info = new SubscriptionInfo(id, "", simSlotIndex, "", "", 0, 0, "", 0,
+-                null, 0, 0, "");
++                null, 0, 0, "", 0);
+         mMobileSignalControllers.put(id, new MobileSignalController(mContext,
+                 mConfig, mHasMobileDataFeature, mPhone, mCallbackHandler, this, info,
+                 mSubDefaults, mReceiverHandler.getLooper()));
+diff --git a/telephony/java/android/telephony/SubscriptionInfo.java b/telephony/java/android/telephony/SubscriptionInfo.java
+index 37ffa06..dbffc0b 100644
+--- a/telephony/java/android/telephony/SubscriptionInfo.java
++++ b/telephony/java/android/telephony/SubscriptionInfo.java
+@@ -111,9 +111,14 @@ public class SubscriptionInfo implements Parcelable {
+     /**
+      * @hide
+      */
++    public int mUserNwMode;
++
++    /**
++     * @hide
++     */
+     public SubscriptionInfo(int id, String iccId, int simSlotIndex, CharSequence displayName,
+             CharSequence carrierName, int nameSource, int iconTint, String number, int roaming,
+-            Bitmap icon, int mcc, int mnc, String countryIso) {
++            Bitmap icon, int mcc, int mnc, String countryIso, int userNwMode) {
+         this.mId = id;
+         this.mIccId = iccId;
+         this.mSimSlotIndex = simSlotIndex;
+@@ -126,6 +131,7 @@ public class SubscriptionInfo implements Parcelable {
+         this.mIconBitmap = icon;
+         this.mMcc = mcc;
+         this.mMnc = mnc;
++        this.mUserNwMode = userNwMode;
+         this.mCountryIso = countryIso;
+     }
+ 
+@@ -277,6 +283,14 @@ public class SubscriptionInfo implements Parcelable {
+     }
+ 
+     /**
++     * Returns the User set Network mode.
++     * @hide
++     */
++    public int getUserNwMode() {
++        return this.mUserNwMode;
++    }
++
++    /**
+      * @return the ISO country code
+      */
+     public String getCountryIso() {
+@@ -297,11 +311,12 @@ public class SubscriptionInfo implements Parcelable {
+             int dataRoaming = source.readInt();
+             int mcc = source.readInt();
+             int mnc = source.readInt();
++            int userNwMode = source.readInt();
+             String countryIso = source.readString();
+             Bitmap iconBitmap = Bitmap.CREATOR.createFromParcel(source);
+ 
+             return new SubscriptionInfo(id, iccId, simSlotIndex, displayName, carrierName,
+-                    nameSource, iconTint, number, dataRoaming, iconBitmap, mcc, mnc, countryIso);
++                    nameSource, iconTint, number, dataRoaming, iconBitmap, mcc, mnc, countryIso, userNwMode);
+         }
+ 
+         @Override
+@@ -323,6 +338,7 @@ public class SubscriptionInfo implements Parcelable {
+         dest.writeInt(mDataRoaming);
+         dest.writeInt(mMcc);
+         dest.writeInt(mMnc);
++        dest.writeInt(mUserNwMode);
+         dest.writeString(mCountryIso);
+         mIconBitmap.writeToParcel(dest, flags);
+     }
+@@ -338,6 +354,6 @@ public class SubscriptionInfo implements Parcelable {
+                 + " displayName=" + mDisplayName + " carrierName=" + mCarrierName
+                 + " nameSource=" + mNameSource + " iconTint=" + mIconTint
+                 + " dataRoaming=" + mDataRoaming + " iconBitmap=" + mIconBitmap + " mcc " + mMcc
+-                + " mnc " + mMnc + "}";
++                + " mnc " + mMnc + " mUserNwMode=" + mUserNwMode + "}";
+     }
+ }
+diff --git a/telephony/java/android/telephony/SubscriptionManager.java b/telephony/java/android/telephony/SubscriptionManager.java
+index 34b9654..1578b43 100644
+--- a/telephony/java/android/telephony/SubscriptionManager.java
++++ b/telephony/java/android/telephony/SubscriptionManager.java
+@@ -127,6 +127,13 @@ public class SubscriptionManager {
+     /** @hide */
+     public static final String NETWORK_MODE = "network_mode";
+ 
++    /**
++     * The user configured Network mode of SIM/sub.
++     * <P>Type: INTEGER (int)</P>
++     * {@hide}
++     */
++    public static final String USER_NETWORK_MODE = "user_network_mode";
++
+     /** @hide */
+     public static final int DEFAULT_NW_MODE = -1;
+ 
+-- 
+1.9.1
+

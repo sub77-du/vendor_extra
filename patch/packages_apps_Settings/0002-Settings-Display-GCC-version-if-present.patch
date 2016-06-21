@@ -1,9 +1,9 @@
-From 31b77aaf8c5e9175a49c675e6b7fad567882cc55 Mon Sep 17 00:00:00 2001
+From 9c7023f4e5c98ba34acd02614fd59c765e87da26 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Sun, 12 Jun 2016 05:54:54 -0500
+Date: Fri, 17 Jun 2016 07:12:45 -0500
 Subject: [PATCH] Settings: Display GCC version if present
 
-Change-Id: I3cb404089585d40e0fe3d6e3dd990c9d9d39d0f8
+Change-Id: I63d8d68ed29d66b9f7f7810119ba860c8870dabf
 ---
  res/values/du_strings.xml                        | 10 ++++++++++
  res/xml/device_info_settings.xml                 | 15 +++++++++++++++
@@ -11,10 +11,10 @@ Change-Id: I3cb404089585d40e0fe3d6e3dd990c9d9d39d0f8
  3 files changed, 43 insertions(+)
 
 diff --git a/res/values/du_strings.xml b/res/values/du_strings.xml
-index 23364f9..8fc07b7 100644
+index 81c4bd7..ea5a96a 100644
 --- a/res/values/du_strings.xml
 +++ b/res/values/du_strings.xml
-@@ -384,4 +384,14 @@
+@@ -387,4 +387,14 @@
      <string name="dtc_version">Clang</string>
      <string name="dtc_version_default">None</string>
  

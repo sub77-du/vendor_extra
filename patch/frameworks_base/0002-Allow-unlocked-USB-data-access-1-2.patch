@@ -1,7 +1,7 @@
-From 749e76ede804f7d6d58345502055ab663546b75a Mon Sep 17 00:00:00 2001
+From 9f6d0140bce50f29ffb4580d97a4862117a96d5a Mon Sep 17 00:00:00 2001
 From: George G <kreach3r@users.noreply.github.com>
 Date: Mon, 21 Mar 2016 14:57:04 +0200
-Subject: [PATCH 33/42] Allow unlocked USB data access (1/2)
+Subject: [PATCH 2/3] Allow unlocked USB data access (1/2)
 
 by @KreAch3R
 
@@ -24,10 +24,10 @@ Signed-off-by: sub77 <sub77@ymail.com>
  2 files changed, 35 insertions(+), 5 deletions(-)
 
 diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
-index f01a3ec..cb4b545 100644
+index 3651fed..8569678 100644
 --- a/core/java/android/provider/Settings.java
 +++ b/core/java/android/provider/Settings.java
-@@ -4723,6 +4723,11 @@ public final class Settings {
+@@ -4695,6 +4695,11 @@ public final class Settings {
           */
          public static final String INCREASING_RING_RAMP_UP_TIME = "increasing_ring_ramp_up_time";
  

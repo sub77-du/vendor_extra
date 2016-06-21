@@ -1,34 +1,28 @@
-From ef5deb02dff7ef7f772db6353990e5ebd3193d52 Mon Sep 17 00:00:00 2001
+From c01d9c60f47d2b6bc715326c61ca624014aa0b11 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Sun, 12 Jun 2016 13:02:09 -0500
-Subject: [PATCH 2/2] Create emergency account with primary stack phone.
+Date: Fri, 17 Jun 2016 07:08:26 -0500
+Subject: [PATCH] Create emergency account with primary stack phone. [2/2]
 
-When creating emergency account associate the primary
-stack phone with it as emergency calls will be placed
-only on primary stack with no sim cards on the device.
-
-Change-Id: I63a9d54950330991e7a93ec8c3982a70d4cdd741
-CRs-Fixed: 965269
+Change-Id: I0fd6ec67d508cd1d86020dab6aa945fd0807b939
 ---
  telephony/java/com/android/internal/telephony/IExtTelephony.aidl | 7 +++++++
  1 file changed, 7 insertions(+)
 
 diff --git a/telephony/java/com/android/internal/telephony/IExtTelephony.aidl b/telephony/java/com/android/internal/telephony/IExtTelephony.aidl
-index 59fbc56..e9be8e1 100644
+index 2ccfddd..ff8c0bb 100644
 --- a/telephony/java/com/android/internal/telephony/IExtTelephony.aidl
 +++ b/telephony/java/com/android/internal/telephony/IExtTelephony.aidl
-@@ -128,5 +128,12 @@ interface IExtTelephony {
-     *     '5' - APPSTATE_READY
+@@ -129,4 +129,11 @@ interface IExtTelephony {
      */
      int getUiccApplicationState(int slotId, int appIndex);
-+
+ 
 +    /**
 +    * Get primary stack phone id.
 +    * @param - void
 +    * @return phone id
 +    */
 +    int getPrimaryStackPhoneId();
-     
++
  }
 -- 
 1.9.1

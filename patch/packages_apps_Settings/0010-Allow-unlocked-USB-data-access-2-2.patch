@@ -1,0 +1,204 @@
+From b719dcf20d1963dd69eb9fcd9e4c736f870bdac3 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 17 Jun 2016 07:16:49 -0500
+Subject: [PATCH] Allow-unlocked-USB-data-access-2-2
+
+Change-Id: I9dae874da401c0deccd995e61d848b8b051c4781
+---
+ res/xml/storage_advanced_settings.xml              |  41 +++++++
+ .../deviceinfo/AdvancedStorageSettings.java        | 135 +++++++++++++++++++++
+ 2 files changed, 176 insertions(+)
+ create mode 100644 res/xml/storage_advanced_settings.xml
+ create mode 100644 src/com/android/settings/deviceinfo/AdvancedStorageSettings.java
+
+diff --git a/res/xml/storage_advanced_settings.xml b/res/xml/storage_advanced_settings.xml
+new file mode 100644
+index 0000000..f717ad7
+--- /dev/null
++++ b/res/xml/storage_advanced_settings.xml
+@@ -0,0 +1,41 @@
++<?xml version="1.0" encoding="utf-8"?>
++
++<!-- Copyright (C) 2016 Krexus
++
++     Licensed under the Apache License, Version 2.0 (the "License");
++     you may not use this file except in compliance with the License.
++     You may obtain a copy of the License at
++
++          http://www.apache.org/licenses/LICENSE-2.0
++
++     Unless required by applicable law or agreed to in writing, software
++     distributed under the License is distributed on an "AS IS" BASIS,
++     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++     See the License for the specific language governing permissions and
++     limitations under the License.
++-->
++
++<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
++        android:title="@string/storage_advanced_titlebar">
++
++    <com.dirtyunicorns.dutweaks.preference.SystemSettingSwitchPreference
++            android:key="usb_data_auto_unlock"
++            android:title="@string/usb_data_auto_unlock_title"
++            android:summary="@string/usb_data_auto_unlock_summary"
++            android:defaultValue="false" />
++
++    <ListPreference
++            android:key="select_usb_configuration"
++            android:title="@string/select_usb_configuration_title"
++            android:dialogTitle="@string/select_usb_configuration_dialog_title"
++            android:entries="@array/usb_configuration_titles"
++            android:entryValues="@array/usb_configuration_values"
++            android:dependency="usb_data_auto_unlock" />
++
++    <Preference
++            android:key="usb_data_auto_unlock_warning"
++            android:summary="@string/usb_data_auto_unlock_warning_summary"
++            android:persistent="false"
++            android:selectable="false" />
++
++</PreferenceScreen>
+diff --git a/src/com/android/settings/deviceinfo/AdvancedStorageSettings.java b/src/com/android/settings/deviceinfo/AdvancedStorageSettings.java
+new file mode 100644
+index 0000000..0de1e0b
+--- /dev/null
++++ b/src/com/android/settings/deviceinfo/AdvancedStorageSettings.java
+@@ -0,0 +1,135 @@
++/*
++ *  Copyright (C) 2016 Krexus
++ *
++ * This program is free software: you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation, either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
++ *
++ */
++package com.android.settings.deviceinfo;
++
++import android.app.Activity;
++import android.app.KeyguardManager;
++import android.content.BroadcastReceiver;
++import android.content.Context;
++import android.content.Intent;
++import android.content.IntentFilter;
++import android.hardware.usb.UsbManager;
++import android.os.Bundle;
++import android.os.SystemProperties;
++import android.preference.ListPreference;
++import android.preference.Preference;
++import android.preference.Preference.OnPreferenceChangeListener;
++import android.preference.PreferenceScreen;
++import android.view.LayoutInflater;
++import android.view.View;
++import android.view.ViewGroup;
++
++import com.android.internal.logging.MetricsLogger;
++
++import com.dirtyunicorns.dutweaks.preference.SystemSettingSwitchPreference;
++import com.android.settings.R;
++import com.android.settings.SettingsPreferenceFragment;
++
++public class AdvancedStorageSettings extends SettingsPreferenceFragment
++        implements OnPreferenceChangeListener {
++
++    private static final String USB_DATA_AUTO_UNLOCK_KEY = "usb_data_auto_unlock";
++    private static final String USB_CONFIGURATION_KEY = "select_usb_configuration";
++
++    private SystemSettingSwitchPreference mUsbDataAutoUnlock;
++    private ListPreference mUsbConfiguration;
++    private KeyguardManager mKeyguardManager;
++
++    @Override
++    protected int getMetricsCategory() {
++        return MetricsLogger.DEVICEINFO_STORAGE;
++    }
++
++    @Override
++    public void onCreate(Bundle savedInstanceState) {
++        super.onCreate(savedInstanceState);
++
++        addPreferencesFromResource(R.xml.storage_advanced_settings);
++
++        mUsbDataAutoUnlock = (SystemSettingSwitchPreference) findPreference(USB_DATA_AUTO_UNLOCK_KEY);
++        mUsbConfiguration = (ListPreference) findPreference(USB_CONFIGURATION_KEY);
++        mKeyguardManager = (KeyguardManager) getSystemService(Context.KEYGUARD_SERVICE);
++    }
++
++    @Override
++    public View onCreateView(LayoutInflater inflater, ViewGroup container,
++            Bundle savedInstanceState) {
++        IntentFilter filter = new IntentFilter();
++        filter.addAction(UsbManager.ACTION_USB_STATE);
++        boolean keyguardSecure = mKeyguardManager.isKeyguardSecure();
++        mUsbDataAutoUnlock.setEnabled(!keyguardSecure);
++        if (keyguardSecure) {
++            mUsbDataAutoUnlock.setChecked(false);
++        }
++        getActivity().registerReceiver(mUsbReceiver, filter);
++        return super.onCreateView(inflater, container, savedInstanceState);
++    }
++
++    @Override
++    public void onDestroyView() {
++        super.onDestroyView();
++        getActivity().unregisterReceiver(mUsbReceiver);
++    }
++
++    @Override
++    public boolean onPreferenceChange(Preference preference, Object newValue) {
++        if (preference == mUsbConfiguration) {
++            writeUsbConfigurationOption(newValue);
++            return true;
++        }
++        return false;
++    }
++
++    private void updateUsbConfigurationValues() {
++        if (mUsbConfiguration != null) {
++            UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
++
++            String[] values = getResources().getStringArray(R.array.usb_configuration_values);
++            String[] titles = getResources().getStringArray(R.array.usb_configuration_titles);
++            int index = 0;
++            for (int i = 0; i < titles.length; i++) {
++                if (manager.isFunctionEnabled(values[i])) {
++                    index = i;
++                    break;
++                }
++            }
++            mUsbConfiguration.setValue(values[index]);
++            mUsbConfiguration.setSummary(titles[index]);
++            mUsbConfiguration.setOnPreferenceChangeListener(this);
++        }
++    }
++
++    private void writeUsbConfigurationOption(Object newValue) {
++        UsbManager manager = (UsbManager)getActivity().getSystemService(Context.USB_SERVICE);
++        String function = newValue.toString();
++        if (function.equals("none")) {
++            manager.setCurrentFunction(null);
++            manager.setUsbDataUnlocked(false);
++        } else {
++            manager.setCurrentFunction(function);
++            manager.setUsbDataUnlocked(true);
++        }
++    }
++
++    private BroadcastReceiver mUsbReceiver = new BroadcastReceiver() {
++        @Override
++        public void onReceive(Context context, Intent intent) {
++            updateUsbConfigurationValues();
++       }
++    };
++}
+-- 
+1.9.1
+

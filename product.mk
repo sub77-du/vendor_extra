@@ -3,23 +3,23 @@
 ############## Packages ################
 ########################################
 
-REMOVE_PACKAGES += \
-    libjni_latinime
+#REMOVE_PACKAGES += \
+#    libjni_latinime
 
 # Add wanted packages
 PRODUCT_PACKAGES += \
     KernelAdiutor \
     EnhancedIME \
 
-#		Matlog \
-#		OpenCamera
+#       OpenCamera
 
 # APP REMOVAL SCRIPT
 PRODUCT_COPY_FILES += \
-		vendor/extra/prebuilt/common/addon.d/60-removal.sh:system/addon.d/60-removal.sh
+        vendor/extra/prebuilt/common/addon.d/60-removal.sh:system/addon.d/60-removal.sh
 
 # ViPER4Android
-ifeq (viper, $(strip $(VIPER_AUDIO_MOD)))
+#ifeq (true, $(strip $(VIPER_AUDIO_MOD)))
+ifdef VIPER_AUDIO_MOD
 PRODUCT_COPY_FILES += \
     vendor/extra/prebuilt/common/bin/audio_policy.sh:system/audio_policy.sh \
     vendor/extra/prebuilt/common/addon.d/95-LolliViPER.sh:system/addon.d/95-LolliViPER.sh \
@@ -29,10 +29,10 @@ PRODUCT_COPY_FILES += \
     vendor/extra/prebuilt/common/viper/lib/soundfx/libeffectproxy.so:system/lib/soundfx/libeffectproxy.so \
     vendor/extra/prebuilt/common/viper/lib/soundfx/libv4a_fx_ics.so:system/lib/soundfx/libv4a_fx_ics.so \
     vendor/extra/prebuilt/common/viper/vendor/etc/audio_effects.conf:system/vendor/etc/audio_effects.conf
-#else
-# AudioFX
-#PRODUCT_PACKAGES += \
-#    AudioFX
+else
+# MusicFX
+PRODUCT_PACKAGES += \
+    MusicFX
 endif
 
 # Openssh
@@ -47,8 +47,10 @@ PRODUCT_PACKAGES += \
 
 # OpenDelta
 PRODUCT_PACKAGES += \
-    OpenDelta
+    OpenDeltaPre \
     
+    #RomAddon
+
 ########################################
 ############# Settings #################
 ########################################

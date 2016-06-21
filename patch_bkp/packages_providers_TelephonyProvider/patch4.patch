@@ -1,0 +1,37 @@
+From 53e44bf7157b0944d96fc5eaa6462d7082558c6f Mon Sep 17 00:00:00 2001
+From: jianzhou <jianzhou@codeaurora.org>
+Date: Tue, 14 Oct 2014 14:25:38 +0800
+Subject: [PATCH] TelephonyProvider: Add visit_area column in DB
+
+Add visit_area column in DB. This value is used to decide whether
+to disable/enable an APN in the current place.
+
+Change-Id: I9bb9415c2db91d505e837053be2722ad99d4facf
+---
+ src/com/android/providers/telephony/TelephonyProvider.java | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/src/com/android/providers/telephony/TelephonyProvider.java b/src/com/android/providers/telephony/TelephonyProvider.java
+index a7e1d0a..5c21776 100644
+--- a/src/com/android/providers/telephony/TelephonyProvider.java
++++ b/src/com/android/providers/telephony/TelephonyProvider.java
+@@ -102,6 +102,8 @@ public class TelephonyProvider extends ContentProvider
+     private static final String READ_ONLY = "read_only";
+     private static final String LOCALIZED_NAME = "localized_name";
+ 
++    private static final String VISIT_AREA = "visit_area";
++
+     private static final UriMatcher s_urlMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+ 
+     private static final ContentValues s_currentNullMap;
+@@ -275,6 +277,7 @@ public class TelephonyProvider extends ContentProvider
+                     "read_only BOOLEAN DEFAULT 0," +
+                     "ppp_number TEXT DEFAULT ''," +
+                     "localized_name TEXT DEFAULT ''," +
++                    "visit_area TEXT DEFAULT ''," +
+                     // Uniqueness collisions are used to trigger merge code so if a field is listed
+                     // here it means we will accept both (user edited + new apn_conf definition)
+                     // Columns not included in UNIQUE constraint: name, current, edited,
+-- 
+1.9.1
+

@@ -1,0 +1,52 @@
+From 52ae2f24005d6f65b6c187598bbc851b7a3d0f47 Mon Sep 17 00:00:00 2001
+From: Deepak Kundra <deepakkundra@gmail.com>
+Date: Thu, 19 Nov 2015 15:45:59 -0800
+Subject: [PATCH] ISub.aidl : Corresponding changes for compilation
+
+Change-Id: I6a1dfa7ff7e5b500e9955faaeeac00233f8e3071
+---
+ .../internal/telephony/SubscriptionController.java | 28 ++++++++++++++++++++++
+ 1 file changed, 28 insertions(+)
+
+diff --git a/src/java/com/android/internal/telephony/SubscriptionController.java b/src/java/com/android/internal/telephony/SubscriptionController.java
+index ec6a721..2ad37e0 100644
+--- a/src/java/com/android/internal/telephony/SubscriptionController.java
++++ b/src/java/com/android/internal/telephony/SubscriptionController.java
+@@ -1748,6 +1748,34 @@ public class SubscriptionController extends ISub.Stub {
+         Binder.restoreCallingIdentity(token);
+     }
+ 
++    @Override
++    public void activateSubId(int subId) {
++        loge("activateSubId: API not supported, subId = " + subId);
++    }
++
++    @Override
++    public void deactivateSubId(int subId) {
++        loge("deactivateSubId: API not supported, subId = " + subId);
++    }
++
++    @Override
++    public int setSubState(int subId, int subStatus) {
++        int result = 0;
++
++        loge("setSubState: API not supported, subId = " + subId + " subStatus = " + subStatus);
++
++        return result;
++    }
++
++    @Override
++    public int getSubState(int subId) {
++        int result = 0;
++
++        loge("getSubState: API not supported, subId = " + subId);
++
++        return result;
++    }
++
+     /**
+      * Store properties associated with SubscriptionInfo in database
+      * @param subId Subscription Id of Subscription
+-- 
+1.9.1
+
