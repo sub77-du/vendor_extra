@@ -1,0 +1,49 @@
+From 652f524bae1a21ae9d24f0d8cfbed04a143d1d03 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Mon, 23 May 2016 06:47:05 -0500
+Subject: [PATCH 04/19] Execute the contents of patchsetup.sh for selected
+ device
+
+Change-Id: If96037d580ac6e1cc4e8e989c53e979af5e9355b
+---
+ envsetup.sh | 13 +++++++++++++
+ 1 file changed, 13 insertions(+)
+
+diff --git a/envsetup.sh b/envsetup.sh
+index 4ad3292..2a01c6f 100644
+--- a/envsetup.sh
++++ b/envsetup.sh
+@@ -247,17 +247,30 @@ function printconfig()
+     get_build_var report_config
+ }
+ 
++function patchdevicetree()
++{
++for f in `test -d device && find -L device/*/$DU_BUILD -maxdepth 4 -name 'patchsetup.sh' 2> /dev/null`
++do
++    echo "Patching device-tree -> $f"
++    . $f
++done
++
++unset f
++}
++
+ function set_stuff_for_environment()
+ {
+     settitle
+     set_java_home
+     setpaths
+     set_sequence_number
++    patchdevicetree
+ 
+     export ANDROID_BUILD_TOP=$(gettop)
+     # With this environment variable new GCC can apply colors to warnings/errors
+     export GCC_COLORS='error=01;31:warning=01;35:note=01;36:caret=01;32:locus=01:quote=01'
+     export ASAN_OPTIONS=detect_leaks=0
++
+ }
+ 
+ function set_sequence_number()
+-- 
+1.9.1
+

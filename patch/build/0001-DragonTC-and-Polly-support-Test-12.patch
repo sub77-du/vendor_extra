@@ -1,0 +1,390 @@
+From a927047100befe05a86d0c192ee16f624def0fa4 Mon Sep 17 00:00:00 2001
+From: Joe Maples <frap129@gmail.com>
+Date: Tue, 29 Dec 2015 17:45:04 -0500
+Subject: [PATCH 01/19] DragonTC and Polly support Test 12
+
+Test 12:
+* Update disable lists
+* Don't force parallelization
+* Don't tile registers
+* Fix BlueTooth
+* Add ThinLTO and LTO option
+* Completely Reorganize (Styling based on JustArchi's optimization commit)
+
+Test 11:
+* Add modules to arm disable list
+* Use O3 for all modules
+* Revert exit-early change
+* Change per loop instructions in dtc source, not via flag
+* Only process profitable loops
+* Remove -lgomp from parallelization flags
+* Clean my_cflags to decrease conflicts and total argument size
+* Improve 3.9 compatibility for arm64 with more disables
+NOTE: Prebuilts must be updated to make use of some new optimizations.
+
+Test 10:
+* Fix typo
+* Do not exit early, regardless of clang version
+
+Test 9:
+* Remove arm.mk
+* Fix issue with DISABLE_DTC where -mcpu=krait2 causes errors
+* Add 3.9 support
+* Add arm64 modules that need to be disabled
+* Do not allow no-affine loops
+* Do not detect parallelization opportunities, all loops are parallelized by force
+* Use context when parallelizing to avoid mis-transformations and overflow
+* 3.7 and up no longer limit computed dependences and use value based dependences to prevent overaproximation
+* 3.8 and up now run Polly's new inliner to prepare loops for transformations
+* 3.8 and up now calculate profitablity based on instructions before loops. The minimal amount of instructions has ben set to 40 in order to avoid run-time regressions while exposing optimization opportunities
+* 3.8 and up now process loops that have been deemed unprofitable in hopes of finding unlikely optimization points
+* 3.8 and up now ignore the first analysis error to find more optimization opportunities
+* 3.8 and up have a max of 40 arrays, raised from 20, that can be taken into account when aliasing
+* 3.8 and up now have register tiling enabled
+NOTE: Old test commits must be reverted first due to reorganization in binary.mk
+
+Test 8:
+* Remove triple flags
+
+Test 7:
+* Add option to enable DragonTC on GCC modules
+* Make sure that the correct target triple is used (for arm64 errors)
+
+Test 6:
+* Add option to disable DTC for specific modules (for arm64 errors)
+* Use Polly Vectorizer instead of Strip-mining loops
+* Run Dead code elimination pass
+* Run Polly after loop optimizations on 3.8 to improve transformations
+NOTE: Prebuilts must be updated because of additions to DragonTC.mk
+
+Test 5:
+* Fix typo for disabling modules
+* Make separate disable lists for arm and arm64
+NOTE: LOCAL_DISABLE_POLLY does not have arch specific versions. This is because it should be in your device tree, so it shouldn't interfere.
+
+Test 4:
+* Make ARM mode off by default
+
+Test 3:
+Huge updates here folks, make sure to read if youve been following the test commits.
+* Toolchain directories can now be named whatver you want, just make sure to set TARGET_DRAGONTC_VERSION to the name in core/clang/config.mk.
+* A simplified SaberMod ARM mode is now bundled, which should improve performance and fix some errors with Polly.
+* AOSP Clang 3.6 is bundled in DragonTC, so you dont need prebuilts/clang/linux-x86/host/3.6 to be AOSP anymore.
+* The Krait2 flag now checks for DragonTC.
+* Exporting DISABLE_DTC_OPTS=true or adding it to a device tree disables Polly and ARM mode.
+
+Things to note:
+* If you used the previous test commits, you MUST revert those before cherry-picking this due to changes in binary.mk.
+* If you build your own prebuilts, you MUST sync DragonTC source and rebuild them before using this.
+* There is a new commit in frameworks/rs that you need to cherry-pick if you don't track ours.
+
+Signed-off-by: Joe Maples <joe@frap129.org>
+
+Conflicts:
+	core/clang/arm.mk
+
+Change-Id: Ib9f339ba9f7dd348eee57b29447a92dcecac5c59
+---
+ core/binary.mk       |   5 ++
+ core/clang/arm.mk    |  11 ---
+ core/clang/config.mk |  12 ++-
+ core/dragontc.mk     | 224 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 240 insertions(+), 12 deletions(-)
+ create mode 100644 core/dragontc.mk
+
+diff --git a/core/binary.mk b/core/binary.mk
+index 08a7e4c..e5cc7da 100644
+--- a/core/binary.mk
++++ b/core/binary.mk
+@@ -185,6 +185,11 @@ ifeq ($(USE_CLANG_PLATFORM_BUILD),true)
+     endif
+ endif
+ 
++# Include DragonTC Optimizations
++ifneq ($(DISABLE_DTC_OPTS),true)
++  include $(BUILD_SYSTEM)/dragontc.mk
++endif
++
+ # arch-specific static libraries go first so that generic ones can depend on them
+ my_static_libraries := $(LOCAL_STATIC_LIBRARIES_$($(my_prefix)$(LOCAL_2ND_ARCH_VAR_PREFIX)ARCH)) $(LOCAL_STATIC_LIBRARIES_$(my_32_64_bit_suffix)) $(my_static_libraries)
+ my_whole_static_libraries := $(LOCAL_WHOLE_STATIC_LIBRARIES_$($(my_prefix)$(LOCAL_2ND_ARCH_VAR_PREFIX)ARCH)) $(LOCAL_WHOLE_STATIC_LIBRARIES_$(my_32_64_bit_suffix)) $(my_whole_static_libraries)
+diff --git a/core/clang/arm.mk b/core/clang/arm.mk
+index bf31f51..3000ce4 100644
+--- a/core/clang/arm.mk
++++ b/core/clang/arm.mk
+@@ -4,17 +4,6 @@ CLANG_CONFIG_arm_EXTRA_ASFLAGS :=
+ 
+ CLANG_CONFIG_arm_EXTRA_CFLAGS :=
+ 
+-ifneq (,$(filter krait,$(TARGET_$(combo_2nd_arch_prefix)CPU_VARIANT)))
+-  # Android's clang support's krait as a CPU whereas GCC doesn't. Specify
+-  # -mcpu here rather than the more normal core/combo/arch/arm/armv7-a-neon.mk.
+-  CLANG_CONFIG_arm_EXTRA_CFLAGS += -mcpu=krait
+-endif
+-
+-ifeq ($(HOST_OS),darwin)
+-  # Darwin is really bad at dealing with idiv/sdiv. Don't use krait on Darwin.
+-  CLANG_CONFIG_arm_EXTRA_CFLAGS += -mcpu=cortex-a9
+-endif
+-
+ CLANG_CONFIG_arm_EXTRA_CPPFLAGS :=
+ 
+ CLANG_CONFIG_arm_EXTRA_LDFLAGS :=
+diff --git a/core/clang/config.mk b/core/clang/config.mk
+index e1bfb01..5c635fa 100644
+--- a/core/clang/config.mk
++++ b/core/clang/config.mk
+@@ -6,9 +6,19 @@ WITHOUT_TARGET_CLANG := true
+ WITHOUT_HOST_CLANG := true
+ endif
+ 
++# Set LLVM version for DragonTC
++TARGET_DRAGONTC_VERSION := 
++
++ifeq ($(TARGET_DRAGONTC_VERSION),)
+ LLVM_PREBUILTS_VERSION := 3.6
+ LLVM_PREBUILTS_PATH := prebuilts/clang/$(BUILD_OS)-x86/host/$(LLVM_PREBUILTS_VERSION)/bin
+-LLVM_RTLIB_PATH := $(LLVM_PREBUILTS_PATH)/../lib/clang/$(LLVM_PREBUILTS_VERSION)/lib/linux/
++LLVM_RTLIB_PATH := $(LLVM_PREBUILTS_PATH)/../lib/clang/$(LLVM_PREBUILTS_VERSION)%/lib/linux/
++export AOSP_CLANG := $(LLVM_PREBUILTS_PATH)/clang$(BUILD_EXECUTABLE_SUFFIX)
++export AOSP_LLVM_LINK := $(LLVM_PREBUILTS_PATH)/llvm-link$(BUILD_EXECUTABLE_SUFFIX)
++export AOSP_LLVM_AS := $(LLVM_PREBUILTS_PATH)/llvm-as$(BUILD_EXECUTABLE_SUFFIX)
++else
++include prebuilts/clang/linux-x86/host/$(TARGET_DRAGONTC_VERSION)/DragonTC.mk
++endif
+ 
+ CLANG := $(LLVM_PREBUILTS_PATH)/clang$(BUILD_EXECUTABLE_SUFFIX)
+ CLANG_CXX := $(LLVM_PREBUILTS_PATH)/clang++$(BUILD_EXECUTABLE_SUFFIX)
+diff --git a/core/dragontc.mk b/core/dragontc.mk
+new file mode 100644
+index 0000000..9d08b7e
+--- /dev/null
++++ b/core/dragontc.mk
+@@ -0,0 +1,224 @@
++# Copyright (C) 2015-2016 DragonTC
++#
++# Licensed under the Apache License, Version 2.0 (the "License");
++# you may not use this file except in compliance with the License.
++# You may obtain a copy of the License at
++#
++#      http://www.apache.org/licenses/LICENSE-2.0
++#
++# Unless required by applicable law or agreed to in writing, software
++# distributed under the License is distributed on an "AS IS" BASIS,
++# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++# See the License for the specific language governing permissions and
++# limitations under the License.
++
++# Set Bluetooth Modules
++BLUETOOTH := libbluetooth_jni bluetooth.mapsapi bluetooth.default bluetooth.mapsapi libbt-brcm_stack audio.a2dp.default libbt-brcm_gki libbt-utils libbt-qcom_sbc_decoder libbt-brcm_bta libbt-brcm_stack libbt-vendor libbtprofile libbtdevice libbtcore bdt bdtest libbt-hci libosi ositests libbluetooth_jni net_test_osi net_test_device net_test_btcore net_bdtool net_hci bdAddrLoader
++
++#######################
++##  D R A G O N T C  ##
++#######################
++
++# Disable modules that don't work with DragonTC. Split up by arch.
++DISABLE_DTC_arm :=
++DISABLE_DTC_arm64 :=
++
++# Set DISABLE_DTC based on arch
++DISABLE_DTC := \
++  $(DISABLE_DTC_$(TARGET_ARCH)) \
++  $(LOCAL_DISABLE_DTC)
++
++# Enable DragonTC on GCC modules. Split up by arch.
++ENABLE_DTC_arm :=
++ENABLE_DTC_arm64 :=
++
++# Set ENABLE_DTC based on arch
++ENABLE_DTC := \
++  $(ENABLE_DTC_$(TARGET_ARCH)) \
++  $(LOCAL_ENABLE_DTC)
++
++# Enable DragonTC on current module if requested.
++ifeq (1,$(words $(filter $(ENABLE_DTC),$(LOCAL_MODULE))))
++  my_cc := $(CLANG)
++  my_cxx := $(CLANG_CXX)
++  my_clang := true
++endif
++
++# Disable DragonTC on current module if requested.
++ifeq ($(my_clang),true)
++  ifeq (1,$(words $(filter $(DISABLE_DTC),$(LOCAL_MODULE))))
++    my_cc := $(AOSP_CLANG)
++    my_cxx := $(AOSP_CLANG_CXX)
++    ifeq ($(HOST_OS),darwin)
++      # Darwin is really bad at dealing with idiv/sdiv. Don't use krait on Darwin.
++      CLANG_CONFIG_arm_EXTRA_CFLAGS += -mcpu=cortex-a9
++    else
++      CLANG_CONFIG_arm_EXTRA_CFLAGS += -mcpu=krait
++    endif
++  else
++    CLANG_CONFIG_arm_EXTRA_CFLAGS += -mcpu=krait2
++  endif
++endif
++
++
++#################
++##  P O L L Y  ##
++#################
++
++# Polly flags for use with Clang
++POLLY := -O3 -mllvm -polly \
++  -mllvm -polly-parallel \
++  -mllvm -polly-ast-use-context \
++  -mllvm -polly-vectorizer=polly \
++  -mllvm -polly-opt-fusion=max \
++  -mllvm -polly-opt-maximize-bands=yes \
++  -mllvm -polly-run-dce
++
++# Enable version specific Polly flags.
++ifeq (1,$(words $(filter 3.7 3.8 3.9,$(LLVM_PREBUILTS_VERSION))))
++  POLLY += -mllvm -polly-dependences-computeout=0 \
++    -mllvm -polly-dependences-analysis-type=value-based
++endif
++ifeq (1,$(words $(filter 3.8 3.9,$(LLVM_PREBUILTS_VERSION))))
++  POLLY += -mllvm -polly-position=after-loopopt \
++    -mllvm -polly-run-inliner \
++    -mllvm -polly-detect-keep-going \
++    -mllvm -polly-rtc-max-arrays-per-group=40
++endif
++
++# Disable modules that dont work with Polly. Split up by arch.
++DISABLE_POLLY_arm := \
++  libpng \
++  libLLVMCodeGen \
++  libLLVMARMCodeGen\
++  libLLVMScalarOpts \
++  libLLVMSupport \
++  libLLVMMC \
++  libLLVMMCParser \
++  libminui \
++  libgui \
++  libF77blas \
++  libF77blasAOSP \
++  libRSCpuRef \
++  libRS \
++  libjni_latinime_common_static \
++  libmedia \
++  libRSDriver \
++  libxml2 \
++  libc_freebsd \
++  libc_tzcode \
++  libv8
++DISABLE_POLLY_arm64 := \
++  libpng \
++  libfuse \
++  libLLVMAsmParser \
++  libLLVMBitReader \
++  libLLVMCodeGen \
++  libLLVMInstCombine \
++  libLLVMMCParser \
++  libLLVMSupport \
++  libLLVMSelectionDAG \
++  libLLVMTransformUtils \
++  libF77blas \
++  libbccSupport \
++  libblas \
++  libRS \
++  libstagefright_mpeg2ts \
++  bcc_strip_attr
++
++# Add version specific disables.
++ifeq (1,$(words $(filter 3.8 3.9,$(LLVM_PREBUILTS_VERSION))))
++  DISABLE_POLLY_arm64 += \
++	healthd \
++	libandroid_runtime \
++	libblas \
++	libF77blas \
++	libF77blasV8 \
++	libgui \
++	libjni_latinime_common_static \
++	libLLVMAArch64CodeGen \
++	libLLVMARMCodeGen \
++	libLLVMAnalysis \
++	libLLVMScalarOpts \
++	libLLVMCore \
++	libLLVMInstrumentation \
++	libLLVMipo \
++	libLLVMMC \
++	libLLVMSupport \
++	libLLVMTransformObjCARC \
++	libLLVMVectorize \
++	libminui \
++	libprotobuf-cpp-lite \
++	libRS \
++	libRSCpuRef \
++	libunwind_llvm \
++	libv8 \
++	libvixl \
++	libvterm \
++	libxml2
++endif
++
++# Set DISABLE_POLLY based on arch
++DISABLE_POLLY := \
++  $(DISABLE_POLLY_$(TARGET_ARCH)) \
++  $(DISABLE_DTC) \
++  $(BLUETOOTH) \
++  $(LOCAL_DISABLE_POLLY)
++
++# Set POLLY based on DISABLE_POLLy
++ifeq (1,$(words $(filter $(DISABLE_POLLY),$(LOCAL_MODULE))))
++  POLLY := -Os
++endif
++
++ifeq ($(my_clang),true)
++  ifndef LOCAL_IS_HOST_MODULE
++    # Possible conflicting flags will be filtered out to reduce argument
++    # size and to prevent issues with locally set optimizations.
++    my_cflags := $(filter-out -Wall -Werror -g -O3 -O2 -Os -O1 -O0 -Og -Oz -Wextra -Weverything,$(my_cflags))
++    # Enable -O3 and Polly if not blacklisted, otherwise use -Os.
++    my_cflags += $(POLLY) -Qunused-arguments -Wno-unknown-warning-option -w
++  endif
++endif
++
++
++#############
++##  L T O  ##
++#############
++
++# Disable modules that don't work with Link Time Optimizations. Split up by arch.
++DISABLE_LTO_arm := libLLVMScalarOpts libjni_latinime_common_static libjni_latinime adbd nit libnetd_client libblas
++DISABLE_THINLTO_arm := libart libart-compiler libsigchain
++DISABLE_LTO_arm64 := 
++DISABLE_THINLTO_arm64 :=
++
++
++# Set DISABLE_LTO and DISABLE_THINLTO based on arch
++DISABLE_LTO := \
++  $(DISABLE_LTO_$(TARGET_ARCH)) \
++  $(DISABLE_DTC) \
++  $(LOCAL_DISABLE_LTO)
++DISABLE_THINLTO := \
++  $(DISABLE_THINLTO_$(TARGET_ARCH)) \
++  $(LOCAL_DISABLE_THINLTO)
++
++# Enable LTO (currently disabled due to issues in linking, enable at your own risk)
++ifeq ($(ENABLE_DTC_LTO),true)
++  ifeq ($(my_clang),true)
++    ifndef LOCAL_IS_HOST_MODULE
++      ifneq ($(LOCAL_MODULE_CLASS),STATIC_LIBRARIES)
++        ifneq (1,$(words $(filter $(DISABLE_LTO),$(LOCAL_MODULE))))
++          ifneq (1,$(words $(filter $(DISABLE_THINLTO),$(LOCAL_MODULE))))
++            my_cflags += -flto=thin -fuse-ld=gold
++            my_ldflags += -flto=thin -fuse-ld=gold
++          else
++            my_cflags += -flto -fuse-ld=gold
++            my_ldflags += -flto -fuse-ld=gold
++          endif
++        else
++          my_cflags += -fno-lto -fuse-ld=gold
++          my_ldflags += -fno-lto -fuse-ld=gold
++        endif
++      endif
++    endif
++  endif
++endif
+-- 
+1.9.1
+

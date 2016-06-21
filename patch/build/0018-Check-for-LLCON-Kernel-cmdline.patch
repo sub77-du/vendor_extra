@@ -1,0 +1,26 @@
+From 1485327780ce3ad47a1609a947da77c7b54e8f84 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Tue, 21 Jun 2016 16:41:16 -0500
+Subject: [PATCH 18/19] Check for LLCON Kernel cmdline
+
+Change-Id: Idc0772c3b65979e2dbc311cd08af941aa26a95e0
+---
+ core/dumpvar.mk | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index 72ba624..6611337 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -112,7 +112,7 @@ $(info   VIPER_AUDIO_MOD=$(VIPER_AUDIO_MOD))
+ endif
+ 
+ # Kernel LLCON info
+-ifeq ($(filter (androidboot.llcon%),$(BOARD_KERNEL_CMDLINE)),)
++ifeq (1,$(words $(filter llcon,$(BOARD_KERNEL_CMDLINE))))
+ $(info   KERNEL_LLCON=Enabled)
+ endif
+ 
+-- 
+1.9.1
+

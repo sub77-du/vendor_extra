@@ -1,0 +1,158 @@
+From 087d8708a47449f180cbf73a1f7722b3eac34089 Mon Sep 17 00:00:00 2001
+From: Joe Maples <frap129@gmail.com>
+Date: Tue, 8 Mar 2016 17:59:52 -0600
+Subject: [PATCH 10/19] Show compiler used when building
+
+Signed-off-by: Joe Maples <frap129@gmail.com>
+Signed-off-by: Corey Edwards <ensabahnur16@gmail.com>
+Signed-off-by: sub77 <sub77@ymail.com>
+
+Conflicts:
+	core/binary.mk
+
+Change-Id: Ib42cdc691147bb05f4b309b3c1ee8b14b04aeb2b
+---
+ core/binary.mk      | 24 +++++++++++++++++++++---
+ core/definitions.mk | 10 +++++-----
+ 2 files changed, 26 insertions(+), 8 deletions(-)
+
+diff --git a/core/binary.mk b/core/binary.mk
+index e5cc7da..45cf069 100644
+--- a/core/binary.mk
++++ b/core/binary.mk
+@@ -185,9 +185,18 @@ ifeq ($(USE_CLANG_PLATFORM_BUILD),true)
+     endif
+ endif
+ 
+-# Include DragonTC Optimizations
+-ifneq ($(DISABLE_DTC_OPTS),true)
+-  include $(BUILD_SYSTEM)/dragontc.mk
++# Add option to make gcc the default for device build
++ifeq ($(USE_GCC_PLATFORM_BUILD),true)
++    ifeq ($(my_clang),true)
++        my_clang := 
++    endif
++endif
++
++# Export compiler type for display
++ifeq ($(my_clang),)
++    my_compiler := gcc
++else
++    my_compiler := clang
+ endif
+ 
+ # arch-specific static libraries go first so that generic ones can depend on them
+@@ -576,6 +585,7 @@ endif  # transform-proto-to-cc rule included only once
+ 
+ $(proto_generated_objects): PRIVATE_ARM_MODE := $(normal_objects_mode)
+ $(proto_generated_objects): PRIVATE_ARM_CFLAGS := $(normal_objects_cflags)
++$(proto_generated_objects): PRIVATE_COMPILER_ID := $(my_compiler)
+ $(proto_generated_objects): $(proto_generated_obj_dir)/%.o: $(proto_generated_sources_dir)/%$(my_proto_source_suffix) $(proto_generated_headers)
+ ifeq ($(my_proto_source_suffix),.c)
+ 	$(transform-$(PRIVATE_HOST)c-to-o)
+@@ -642,6 +652,7 @@ endif
+ ifneq ($(strip $(yacc_cpps)),)
+ $(yacc_objects): PRIVATE_ARM_MODE := $(normal_objects_mode)
+ $(yacc_objects): PRIVATE_ARM_CFLAGS := $(normal_objects_cflags)
++$(yacc_objects): PRIVATE_COMPILER_ID := $(my_compiler)
+ $(yacc_objects): $(intermediates)/%.o: $(intermediates)/%$(LOCAL_CPP_EXTENSION)
+ 	$(transform-$(PRIVATE_HOST)cpp-to-o)
+ endif
+@@ -676,6 +687,7 @@ endif
+ ifneq ($(strip $(lex_cpps)),)
+ $(lex_objects): PRIVATE_ARM_MODE := $(normal_objects_mode)
+ $(lex_objects): PRIVATE_ARM_CFLAGS := $(normal_objects_cflags)
++$(lex_objects): PRIVATE_COMPILER_ID := $(my_compiler)
+ $(lex_objects): $(intermediates)/%.o: \
+     $(intermediates)/%$(LOCAL_CPP_EXTENSION) \
+     $(my_additional_dependencies) \
+@@ -714,8 +726,10 @@ cpp_normal_objects := $(addprefix $(intermediates)/,$(cpp_normal_sources:$(LOCAL
+ 
+ $(dotdot_arm_objects) $(cpp_arm_objects): PRIVATE_ARM_MODE := $(arm_objects_mode)
+ $(dotdot_arm_objects) $(cpp_arm_objects): PRIVATE_ARM_CFLAGS := $(arm_objects_cflags)
++$(dotdot_arm_objects) $(cpp_arm_objects): PRIVATE_COMPILER_ID := $(my_compiler)
+ $(dotdot_objects) $(cpp_normal_objects): PRIVATE_ARM_MODE := $(normal_objects_mode)
+ $(dotdot_objects) $(cpp_normal_objects): PRIVATE_ARM_CFLAGS := $(normal_objects_cflags)
++$(dotdot_objects) $(cpp_normal_objects): PRIVATE_COMPILER_ID := $(my_compiler)
+ 
+ cpp_objects        := $(cpp_arm_objects) $(cpp_normal_objects)
+ 
+@@ -742,6 +756,7 @@ ifneq ($(strip $(gen_cpp_objects)),)
+ # TODO: support compiling certain generated files as arm.
+ $(gen_cpp_objects): PRIVATE_ARM_MODE := $(normal_objects_mode)
+ $(gen_cpp_objects): PRIVATE_ARM_CFLAGS := $(normal_objects_cflags)
++$(gen_cpp_objects): PRIVATE_COMPILER_ID := $(my_compiler)
+ $(gen_cpp_objects): $(intermediates)/%.o: \
+     $(intermediates)/%$(LOCAL_CPP_EXTENSION) $(yacc_cpps) \
+     $(proto_generated_headers) \
+@@ -811,8 +826,10 @@ c_normal_objects := $(addprefix $(intermediates)/,$(c_normal_sources:.c=.o))
+ 
+ $(dotdot_arm_objects) $(c_arm_objects): PRIVATE_ARM_MODE := $(arm_objects_mode)
+ $(dotdot_arm_objects) $(c_arm_objects): PRIVATE_ARM_CFLAGS := $(arm_objects_cflags)
++$(dotdot_arm_objects) $(c_arm_objects): PRIVATE_COMPILER_ID := $(my_compiler)
+ $(dotdot_objects) $(c_normal_objects): PRIVATE_ARM_MODE := $(normal_objects_mode)
+ $(dotdot_objects) $(c_normal_objects): PRIVATE_ARM_CFLAGS := $(normal_objects_cflags)
++$(dotdot_objects) $(c_normal_objects): PRIVATE_COMPILER_ID := $(my_compiler)
+ 
+ c_objects        := $(c_arm_objects) $(c_normal_objects)
+ 
+@@ -837,6 +854,7 @@ ifneq ($(strip $(gen_c_objects)),)
+ # TODO: support compiling certain generated files as arm.
+ $(gen_c_objects): PRIVATE_ARM_MODE := $(normal_objects_mode)
+ $(gen_c_objects): PRIVATE_ARM_CFLAGS := $(normal_objects_cflags)
++$(gen_c_objects): PRIVATE_COMPILER_ID := $(my_compiler)
+ $(gen_c_objects): $(intermediates)/%.o: $(intermediates)/%.c $(yacc_cpps) $(proto_generated_headers) \
+     $(my_additional_dependencies)
+ 	$(transform-$(PRIVATE_HOST)c-to-o)
+diff --git a/core/definitions.mk b/core/definitions.mk
+index 53365a0..9da2059 100644
+--- a/core/definitions.mk
++++ b/core/definitions.mk
+@@ -1051,7 +1051,7 @@ endef
+ 
+ define transform-cpp-to-o
+ @mkdir -p $(dir $@)
+-@echo -e ${CL_GRN}"target $(PRIVATE_ARM_MODE) C++:"${CL_RST}" $(PRIVATE_MODULE) <= $<"
++@echo -e ${CL_GRN}"target $(PRIVATE_COMPILER_ID) $(PRIVATE_ARM_MODE) C++:"${CL_RST}" $(PRIVATE_MODULE) <= $<"
+ $(hide) $(PRIVATE_CXX) \
+ 	$(addprefix -I , $(PRIVATE_C_INCLUDES)) \
+ 	$(shell cat $(PRIVATE_IMPORT_INCLUDES)) \
+@@ -1103,7 +1103,7 @@ $(hide) $(PRIVATE_CC) \
+ endef
+ 
+ define transform-c-to-o-no-deps
+-@echo -e ${CL_GRN}"target $(PRIVATE_ARM_MODE) C:"${CL_RST}" $(PRIVATE_MODULE) <= $<"
++@echo -e ${CL_GRN}"target $(PRIVATE_COMPILER_ID) $(PRIVATE_ARM_MODE) C:"${CL_RST}" $(PRIVATE_MODULE) <= $<"
+ $(call transform-c-or-s-to-o-no-deps, \
+     $(PRIVATE_CFLAGS) \
+     $(PRIVATE_CONLYFLAGS) \
+@@ -1158,7 +1158,7 @@ endef
+ 
+ define transform-host-cpp-to-o
+ @mkdir -p $(dir $@)
+-@echo -e ${CL_YLW}"host C++:"${CL_RST}" $(PRIVATE_MODULE) <= $<"
++@echo -e ${CL_YLW}"host $(PRIVATE_COMPILER_ID) C++:"${CL_RST}" $(PRIVATE_MODULE) <= $<"
+ $(hide) $(PRIVATE_CXX) \
+ 	$(addprefix -I , $(PRIVATE_C_INCLUDES)) \
+ 	$(shell cat $(PRIVATE_IMPORT_INCLUDES)) \
+@@ -1205,7 +1205,7 @@ $(hide) $(PRIVATE_CC) \
+ endef
+ 
+ define transform-host-c-to-o-no-deps
+-@echo -e ${CL_YLW}"host C:"${CL_RST}" $(PRIVATE_MODULE) <= $<"
++@echo -e ${CL_YLW}"host $(PRIVATE_COMPILER_ID) C:"${CL_RST}" $(PRIVATE_MODULE) <= $<"
+ $(call transform-host-c-or-s-to-o-no-deps, $(PRIVATE_CFLAGS) $(PRIVATE_CONLYFLAGS) $(PRIVATE_DEBUG_CFLAGS))
+ endef
+ 
+@@ -2368,7 +2368,7 @@ $(if $(2), \
+   echo "$$printname maxsize=$$maxsize blocksize=$$img_blocksize total=$$total reserve=$$reserve"; \
+   if [ "$$total" -gt "$$maxsize" ]; then \
+     echo "error: $$printname too large ($$total > [$(2) - $$reserve])"; \
+-    false; \
++    true; \
+   elif [ "$$total" -gt $$((maxsize - 32768)) ]; then \
+     echo "WARNING: $$printname approaching size limit ($$total now; limit $$maxsize)"; \
+   fi \
+-- 
+1.9.1
+

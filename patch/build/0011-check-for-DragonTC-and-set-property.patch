@@ -1,0 +1,68 @@
+From 5205eda7ff4ff4bc6caf60ba7a27978ea1e28caf Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 10 Jun 2016 14:57:06 -0500
+Subject: [PATCH 11/19] check for DragonTC and set property
+
+Change-Id: I311fcafd9671d5f1710d183860661a9b5e15862a
+---
+ core/clang/config.mk | 16 +++++++++++++---
+ core/dumpvar.mk      |  9 +++++----
+ 2 files changed, 18 insertions(+), 7 deletions(-)
+
+diff --git a/core/clang/config.mk b/core/clang/config.mk
+index 36f3a91..9d8bec1 100644
+--- a/core/clang/config.mk
++++ b/core/clang/config.mk
+@@ -7,10 +7,20 @@ WITHOUT_HOST_CLANG := true
+ endif
+ 
+ # Set LLVM version for DragonTC
+-ifeq ($(TARGET_CLANG_VERSION_EXP),)
+-TARGET_DRAGONTC_VERSION := 3.9
++ifndef FALLBACK_CLANG
++	ifndef TARGET_CLANG_VERSION_EXP
++		TARGET_DRAGONTC_VERSION :=
++	endif
+ else
+-TARGET_DRAGONTC_VERSION := $(TARGET_CLANG_VERSION_EXP)
++ifeq (1,$(words $(filter 3.9,$(FALLBACK_CLANG))))
++	TARGET_DRAGONTC_VERSION := $(FALLBACK_CLANG)
++else ifeq (1,$(words $(filter 3.9,$(TARGET_CLANG_VERSION_EXP))))
++	TARGET_DRAGONTC_VERSION := $(TARGET_CLANG_VERSION_EXP)
++endif
++	DTC_PATH := prebuilts/clang/linux-x86/host/$(TARGET_DRAGONTC_VERSION)
++	DTC_VER := $(shell cat $(DTC_PATH)/VERSION)
++	export $(DTC_VER)
++	PRODUCT_PROPERTY_OVERRIDES += ro.dtc.version=$(DTC_VER)
+ endif
+ 
+ ifeq ($(TARGET_DRAGONTC_VERSION),)
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index 2092a31..3e057c7 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -72,16 +72,17 @@ $(info   TARGET_BUILD_TYPE=$(TARGET_BUILD_TYPE))
+ $(info   TARGET_ARCH=$(TARGET_ARCH))
+ $(info   TARGET_GCC_VERSION=$(TARGET_GCC_VERSION))
+ $(info   TARGET_NDK_GCC_VERSION=$(TARGET_NDK_GCC_VERSION))
+- ifeq ($(TARGET_CLANG_VERSION_EXP),)
+- else
+-  $(info   TARGET_CLANG_VERSION=$(TARGET_CLANG_VERSION_EXP))
+- endif
+   ifeq ($(TARGET_KERNEL_VERSION_EXP),)
+  else
+   $(info   TARGET_KERNEL_GCC_VERSION=$(TARGET_KERNEL_VERSION_EXP))
+  endif
+ $(info   TARGET_ARCH_VARIANT=$(TARGET_ARCH_VARIANT))
+ $(info   TARGET_CPU_VARIANT=$(TARGET_CPU_VARIANT))
++# DragonTC info
++ifeq ($(TARGET_DRAGONTC_VERSION),)
++else
++$(info   CLANG_VERSION=$(DTC_VER))
++endif
+ $(info   HOST_ARCH=$(HOST_ARCH))
+ $(info   HOST_OS=$(HOST_OS))
+ $(info   HOST_OS_EXTRA=$(HOST_OS_EXTRA))
+-- 
+1.9.1
+

@@ -1,0 +1,57 @@
+From 493449a36e168803119d4a2d2e1a2621ca484bd1 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 17:15:41 -0500
+Subject: [PATCH 16/19] Check for GCC Optimizations and AudioMod
+
+Change-Id: I48006b14baa79392d8abbad74a8ce6dc90d6ec09
+---
+ core/dumpvar.mk | 21 ++++++++++++++++++---
+ 1 file changed, 18 insertions(+), 3 deletions(-)
+
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index e8ea46c..72ba624 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -61,7 +61,6 @@ endif
+ 
+ endif # CALLED_FROM_SETUP
+ 
+-
+ ifneq ($(PRINT_BUILD_CONFIG),)
+ HOST_OS_EXTRA:=$(shell python -c "import platform; print(platform.platform())")
+ $(info ============================================)
+@@ -99,6 +98,24 @@ ifeq ($(TARGET_DRAGONTC_VERSION),)
+ else
+ $(info   TARGET_CLANG_VERSION=$(DTC_VER))
+ endif
++
++# GCC Optimization info
++ifeq ($(GCC_OPTIMIZATION_LEVELS),)
++else
++$(info   TARGET_GCC_OPT=$(GCC_OPTIMIZATION_LEVELS))
++endif
++
++# Audio Mod info
++ifeq ($(VIPER_AUDIO_MOD),)
++else
++$(info   VIPER_AUDIO_MOD=$(VIPER_AUDIO_MOD))
++endif
++
++# Kernel LLCON info
++ifeq ($(filter (androidboot.llcon%),$(BOARD_KERNEL_CMDLINE)),)
++$(info   KERNEL_LLCON=Enabled)
++endif
++
+ $(info   HOST_ARCH=$(HOST_ARCH))
+ $(info   HOST_OS=$(HOST_OS))
+ $(info   HOST_OS_EXTRA=$(HOST_OS_EXTRA))
+@@ -106,6 +123,4 @@ $(info   HOST_BUILD_TYPE=$(HOST_BUILD_TYPE))
+ $(info   BUILD_ID=$(BUILD_ID))
+ $(info   OUT_DIR=$(OUT_DIR))
+ $(info ============================================)
+-$(info   PATCHSTATUS=$(PATCHSTATUS))
+ endif
+-
+-- 
+1.9.1
+

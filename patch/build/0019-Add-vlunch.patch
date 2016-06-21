@@ -1,0 +1,41 @@
+From cfeaad97da0473b64951173d6d5a41a574b2f61e Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Tue, 21 Jun 2016 16:41:24 -0500
+Subject: [PATCH 19/19] Add vlunch
+
+Change-Id: I821a32b0f34239313306e95db706a3f124f2501a
+---
+ envsetup.sh | 10 +++++++++-
+ 1 file changed, 9 insertions(+), 1 deletion(-)
+
+diff --git a/envsetup.sh b/envsetup.sh
+index c625a7d..84ed661 100644
+--- a/envsetup.sh
++++ b/envsetup.sh
+@@ -2,7 +2,8 @@ function hmm() {
+ cat <<EOF
+ Invoke ". build/envsetup.sh" from your shell to add the following functions to your environment:
+ - lunch:   lunch <product_name>-<build_variant>
+-- plunch:  lunch and exec patchsetup.sh
++- plunch:  lunch and exec device patchsetup.sh
++- vlunch:  lunch and exec vendor patchsetup.sh
+ - tapas:   tapas [<App1> <App2> ...] [arm|x86|mips|armv5|arm64|x86_64|mips64] [eng|userdebug|user]
+ - croot:   Changes directory to the top of the tree.
+ - cout:    Changes directory to out.
+@@ -577,6 +578,13 @@ function plunch()
+ 	export PATCHMODE=true
+ 	lunch
+ }
++
++function vlunch()
++{
++	export PATCHMODE=false
++	lunch
++}
++
+ function lunch()
+ {
+     local answer
+-- 
+1.9.1
+

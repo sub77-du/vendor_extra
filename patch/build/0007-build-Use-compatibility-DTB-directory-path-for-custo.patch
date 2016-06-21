@@ -1,0 +1,41 @@
+From 339bf23385b681b426cd4330e237245ca5e52a4c Mon Sep 17 00:00:00 2001
+From: Ethan Chen <intervigil@gmail.com>
+Date: Tue, 12 Apr 2016 17:03:29 -0700
+Subject: [PATCH 07/19] build: Use compatibility DTB directory path for custom
+ DTB tool builds
+
+* dtbToolCM is able to search subdirectories, but we are not guaranteed
+  that other dtbTool binaries have the same capability. Re-specify
+  multiple paths for non-dtbToolCM builds just in case.
+
+Change-Id: Id69e000af5eba60a07662b178cb95950451efd17
+Signed-off-by: sub77 <sub77@ymail.com>
+
+Conflicts:
+	core/tasks/dt_image.mk
+---
+ core/tasks/dt_image.mk | 7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+diff --git a/core/tasks/dt_image.mk b/core/tasks/dt_image.mk
+index 3328e56..a1e8ee7 100644
+--- a/core/tasks/dt_image.mk
++++ b/core/tasks/dt_image.mk
+@@ -18,8 +18,13 @@ DTBTOOL := $(HOST_OUT_EXECUTABLES)/$(DTBTOOL_NAME)$(HOST_EXECUTABLE_SUFFIX)
+ 
+ INSTALLED_DTIMAGE_TARGET := $(PRODUCT_OUT)/dt.img
+ 
++ifeq ($(strip $(TARGET_CUSTOM_DTBTOOL)),)
++# dtbToolCM will search subdirectories
++possible_dtb_dirs = $(KERNEL_OUT)/arch/$(KERNEL_ARCH)/boot/
++else
+ # Most specific paths must come first in possible_dtb_dirs
+-possible_dtb_dirs = $(KERNEL_OUT)/arch/$(TARGET_KERNEL_ARCH)/boot/
++possible_dtb_dirs = $(KERNEL_OUT)/arch/$(KERNEL_ARCH)/boot/dts/ $(KERNEL_OUT)/arch/$(KERNEL_ARCH)/boot/
++endif
+ dtb_dir = $(firstword $(wildcard $(possible_dtb_dirs)))
+ 
+ define build-dtimage-target
+-- 
+1.9.1
+

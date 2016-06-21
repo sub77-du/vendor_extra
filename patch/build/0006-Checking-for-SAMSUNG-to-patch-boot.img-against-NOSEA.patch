@@ -1,0 +1,67 @@
+From 512c233a5b58e4e0287cfe2117603e8febfd507e Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 10 Jun 2016 06:39:28 -0500
+Subject: [PATCH 06/19] Checking for SAMSUNG to patch boot.img against
+ NOSEANDROIDENFORCE tag
+
+Change-Id: Ida3fb0026d7a8475872db38e3ee90885e9efc682
+---
+ core/Makefile | 17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
+
+diff --git a/core/Makefile b/core/Makefile
+index e3f066d..c044580 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -545,6 +545,9 @@ $(INSTALLED_BOOTIMAGE_TARGET): $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_FILES) $(BOOT_S
+ 	$(BOOT_SIGNER) /boot $@ $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_VERITY_SIGNING_KEY).pk8 $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_VERITY_SIGNING_KEY).x509.pem $@
+ 	$(hide) $(call assert-max-image-size,$@,$(BOARD_BOOTIMAGE_PARTITION_SIZE))
+ 	@echo -e ${CL_CYN}"Made boot image: $@"${CL_RST}
++ifeq ($(PRODUCT_MANUFACTURER),samsung)
++	$(hide) $(call check-and-patch)
++endif
+ 
+ .PHONY: bootimage-nodeps
+ bootimage-nodeps: $(MKBOOTIMG) $(BOOT_SIGNER)
+@@ -553,6 +556,9 @@ bootimage-nodeps: $(MKBOOTIMG) $(BOOT_SIGNER)
+ 	$(BOOT_SIGNER) /boot $(INSTALLED_BOOTIMAGE_TARGET) $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_VERITY_SIGNING_KEY).pk8 $(PRODUCTS.$(INTERNAL_PRODUCT).PRODUCT_VERITY_SIGNING_KEY).x509.pem $(INSTALLED_BOOTIMAGE_TARGET)
+ 	$(hide) $(call assert-max-image-size,$(INSTALLED_BOOTIMAGE_TARGET),$(BOARD_BOOTIMAGE_PARTITION_SIZE))
+ 	@echo -e ${CL_INS}"Made boot image: $@"${CL_RST}
++ifeq ($(PRODUCT_MANUFACTURER),samsung)
++	$(hide) $(call check-and-patch)
++endif
+ 
+ else ifndef BOARD_CUSTOM_BOOTIMG_MK
+ 
+@@ -578,6 +584,9 @@ $(INSTALLED_BOOTIMAGE_TARGET): $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_FILES) $(BOOTIM
+ 	$(hide) $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_ARGS) $(BOARD_MKBOOTIMG_ARGS) --output $@
+ 	$(hide) $(call assert-max-image-size,$@,$(BOARD_BOOTIMAGE_PARTITION_SIZE))
+ 	@echo -e ${CL_CYN}"Made boot image: $@"${CL_RST}
++ifeq ($(PRODUCT_MANUFACTURER),samsung)
++	$(hide) $(call check-and-patch)
++endif
+ 
+ .PHONY: bootimage-nodeps
+ bootimage-nodeps: $(MKBOOTIMG)
+@@ -585,6 +594,9 @@ bootimage-nodeps: $(MKBOOTIMG)
+ 	$(hide) $(MKBOOTIMG) $(INTERNAL_BOOTIMAGE_ARGS) $(BOARD_MKBOOTIMG_ARGS) --output $(INSTALLED_BOOTIMAGE_TARGET)
+ 	$(hide) $(call assert-max-image-size,$(INSTALLED_BOOTIMAGE_TARGET),$(BOARD_BOOTIMAGE_PARTITION_SIZE))
+ 	@echo -e ${CL_INS}"Made boot image: $@"${CL_RST}
++ifeq ($(PRODUCT_MANUFACTURER),samsung)
++	$(hide) $(call check-and-patch)
++endif
+ 
+   endif # PRODUCT_SUPPORTS_VBOOT
+ endif # PRODUCT_SUPPORTS_BOOT_SIGNER / BOARD_CUSTOM_BOOTIMG_MK
+@@ -2165,3 +2177,8 @@ endif
+ ifneq ($(sdk_repo_goal),)
+ include $(TOPDIR)development/build/tools/sdk_repo.mk
+ endif
++
++define check-and-patch
++	$(hide) echo -n "SEANDROIDENFORCE" >> $(PRODUCT_OUT)/boot.img
++	@echo -e ${CL_CYN}"Patched boot image: $@"${CL_RST}
++endef
+-- 
+1.9.1
+
