@@ -1,4 +1,4 @@
-From 9f6d0140bce50f29ffb4580d97a4862117a96d5a Mon Sep 17 00:00:00 2001
+From 45f8d8065542bf867a153996b7a40d6274398bd4 Mon Sep 17 00:00:00 2001
 From: George G <kreach3r@users.noreply.github.com>
 Date: Mon, 21 Mar 2016 14:57:04 +0200
 Subject: [PATCH 2/3] Allow unlocked USB data access (1/2)
@@ -24,10 +24,10 @@ Signed-off-by: sub77 <sub77@ymail.com>
  2 files changed, 35 insertions(+), 5 deletions(-)
 
 diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
-index 3651fed..8569678 100644
+index aeb28bc..362011a 100644
 --- a/core/java/android/provider/Settings.java
 +++ b/core/java/android/provider/Settings.java
-@@ -4695,6 +4695,11 @@ public final class Settings {
+@@ -4723,6 +4723,11 @@ public final class Settings {
           */
          public static final String INCREASING_RING_RAMP_UP_TIME = "increasing_ring_ramp_up_time";
  
@@ -37,10 +37,10 @@ index 3651fed..8569678 100644
 +       public static final String USB_DATA_AUTO_UNLOCK = "usb_data_auto_unlock";
 +
          /**
-          * Settings to backup. This is here so that it's in the same place as the settings
-          * keys and easy to update.
+          * Volume dialog timeout
+          *
 diff --git a/services/usb/java/com/android/server/usb/UsbDeviceManager.java b/services/usb/java/com/android/server/usb/UsbDeviceManager.java
-index ec8a11f..8ec2de2 100644
+index 21af68d..9f2c306 100644
 --- a/services/usb/java/com/android/server/usb/UsbDeviceManager.java
 +++ b/services/usb/java/com/android/server/usb/UsbDeviceManager.java
 @@ -71,7 +71,7 @@ public class UsbDeviceManager {
@@ -129,7 +129,7 @@ index ec8a11f..8ec2de2 100644
                          // restore defaults when USB is disconnected
                          setEnabledFunctions(null, false);
                      }
-@@ -920,6 +940,11 @@ public class UsbDeviceManager {
+@@ -921,6 +941,11 @@ public class UsbDeviceManager {
          return UsbManager.containsFunction(SystemProperties.get(USB_CONFIG_PROPERTY), function);
      }
  
@@ -142,5 +142,5 @@ index ec8a11f..8ec2de2 100644
          if (DEBUG) Slog.d(TAG, "setCurrentFunctions(" + functions + ")");
          mHandler.sendMessage(MSG_SET_CURRENT_FUNCTIONS, functions);
 -- 
-1.9.1
+2.5.0
 

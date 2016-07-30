@@ -49,10 +49,15 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
 	fi
 	else
 		echo No
-		echo "Trying to apply patch $(basename "$patch") to '$repo_to_patch'"
+		echo -e ${CL_GRN}"Trying to apply patch $(basename "$patch") to '$repo_to_patch'"${CL_RST}
 		if ! git am $absolute_patch_path; then
 			echo -e ${CL_RED}"Failed, aborting git am"${CL_RST}
 			git am --abort
+				echo -e ${CL_RED}"Retry git am -3"${CL_RST}
+					if ! git am -3 $absolute_patch_path; then
+						echo -e ${CL_RED}"Failed -3, aborting git am"${CL_RST}
+						git am --abort
+					fi
 		fi
 	fi
 	popd > /dev/null

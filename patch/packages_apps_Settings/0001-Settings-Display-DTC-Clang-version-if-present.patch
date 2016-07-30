@@ -1,9 +1,9 @@
-From cc2b73fed66a111ffc0d5137c2101d8f1c85e1df Mon Sep 17 00:00:00 2001
+From 467a750582ad386722a1f9abff2fc186c8f89d08 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Fri, 17 Jun 2016 07:11:05 -0500
+Date: Sat, 30 Jul 2016 00:52:12 +0000
 Subject: [PATCH] Settings-Display-DTC-Clang-version-if-present
 
-Change-Id: Id4a4e92c262f4adfe3598ea06c6a49c49d3c8f8c
+Change-Id: I90c366c62b1acb096ff3f8afff1bc77f1f4df8c7
 ---
  res/values/du_strings.xml                        | 4 ++++
  res/xml/device_info_settings.xml                 | 7 +++++++
@@ -11,12 +11,12 @@ Change-Id: Id4a4e92c262f4adfe3598ea06c6a49c49d3c8f8c
  3 files changed, 18 insertions(+)
 
 diff --git a/res/values/du_strings.xml b/res/values/du_strings.xml
-index 885f5a3..81c4bd7 100644
+index 01d528c..2cde961 100644
 --- a/res/values/du_strings.xml
 +++ b/res/values/du_strings.xml
-@@ -383,4 +383,8 @@
-     <!-- Volume settings - Volume adjustment sound -->
-     <string name="volume_adjust_sounds_title">Volume adjustment sounds</string>
+@@ -399,4 +399,8 @@
+     <string name="proximity_wake_title">Prevent accidental wake up</string>
+     <string name="proximity_wake_summary">Check the proximity sensor prior to waking up screen</string>
  
 +    <!-- Clang version -->
 +    <string name="dtc_version">Clang</string>
@@ -74,5 +74,5 @@ index 45c17a4..d23a0de 100644
          removePreferenceIfPropertyMissing(getPreferenceScreen(), KEY_EQUIPMENT_ID,
                  PROPERTY_EQUIPMENT_ID);
 -- 
-1.9.1
+2.5.0
 

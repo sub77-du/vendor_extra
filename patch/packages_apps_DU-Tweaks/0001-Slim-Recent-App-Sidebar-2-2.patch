@@ -1,4 +1,4 @@
-From 036c5d02e3bd6b10284b34d17d25f1102ebf3d6c Mon Sep 17 00:00:00 2001
+From 4a1f25daff5141349aea1b9befc21f7f46275054 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
 Date: Fri, 10 Jun 2016 19:44:09 -0500
 Subject: [PATCH] Slim Recent App Sidebar [2/2]
@@ -28,27 +28,54 @@ PS3: Some lines were to long
 
 Change-Id: I40a60bb16de3f84a65371b08074dec2efcfdc4ec
 ---
- res/values/strings.xml                             |  14 ++
+ res/values/strings.xml                             |  40 ++--
  res/xml/recent_app_sidebar_fragment.xml            |  30 +++
  res/xml/recent_app_sidebar_settings.xml            |  55 ++++++
  res/xml/recents.xml                                |  12 ++
  .../dutweaks/dslv/ActionListViewSettings.java      |   8 +
  .../dutweaks/fragments/RecentAppSidebar.java       | 205 +++++++++++++++++++++
  .../fragments/RecentAppSidebarFragment.java        |  83 +++++++++
- 7 files changed, 407 insertions(+)
+ 7 files changed, 406 insertions(+), 27 deletions(-)
  create mode 100644 res/xml/recent_app_sidebar_fragment.xml
  create mode 100644 res/xml/recent_app_sidebar_settings.xml
  create mode 100644 src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebar.java
  create mode 100644 src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebarFragment.java
 
 diff --git a/res/values/strings.xml b/res/values/strings.xml
-index f5e9d12..8a81f8e 100644
+index 4123fe3..26213c3 100644
 --- a/res/values/strings.xml
 +++ b/res/values/strings.xml
-@@ -1050,4 +1050,18 @@
+@@ -997,32 +997,18 @@
      <string name="screenshot_crop_behavior_title">Crop mode</string>
      <string name="screenshot_crop_behavior_summary">Always use the cropped image inside the cropping area, even if the apply button hasn\'t been pressed</string>
  
+-    <!-- Three finger swipe gesture -->
+-    <string name="three_finger_gesture_info">After selecting a target from below, swipe vertically with 3 fingers in a single motion from top to bottom to trigger the action you selected.</string>
+-    <string name="three_finger_swipe_gesture_title">Three finger swipe gesture</string>
+-
+-    <!-- DirtyTweaks tabs slide effects -->
+-    <string name="tabs_effect_title">Dirty Tweaks tabs transition effect</string>
+-    <string name="effect_default">Default</string>
+-    <string name="effect_accordion">Accordion</string>
+-    <string name="effect_background_to_foreground">Background to foreground</string>
+-    <string name="effect_cube_in">Cube in</string>
+-    <string name="effect_cube_out">Cube out</string>
+-    <string name="effect_depth_page">Depth page</string>
+-    <string name="effect_flip_horizontal">Flip horizontal</string>
+-    <string name="effect_flip_vertical">Flip vertical</string>
+-    <string name="effect_foreground_to_background">Foreground to background</string>
+-    <string name="effect_rotate_down">Rotate down</string>
+-    <string name="effect_rotate_up">Rotate up</string>
+-    <string name="effect_scale_in_out">Scale in out</string>
+-    <string name="effect_stack">Stack</string>
+-    <string name="effect_tablet">Tablet</string>
+-    <string name="effect_zoom_in">Zoom in</string>
+-    <string name="effect_zoom_out_slide">Zoom out slide</string>
+-    <string name="effect_zoom_out">Zoom out</string>
+-
+-    <!-- QS location sensors mode -->
+-    <string name="qs_advanced_location_title">Advanced location settings</string>
+-    <string name="qs_advanced_location_summary">Enable advanced settings for location in quick settings</string>
 +    <!-- Slim Recent App Sidebar  -->
 +    <string name="recent_panel_category">Slim Recents</string>
 +    <string name="recent_app_sidebar_title">App sidebar</string>
@@ -62,7 +89,7 @@ index f5e9d12..8a81f8e 100644
 +    <string name="recent_app_sidebar_scale_title">Size</string>
 +    <string name="recent_app_sidebar_open_simultaneously_title">Open simultaneously with recents</string>
 +    <string name="recent_app_sidebar_open_simultaneously_summary">Reduce recents opening lag by disabling this</string>
-+
+ 
  </resources>
 diff --git a/res/xml/recent_app_sidebar_fragment.xml b/res/xml/recent_app_sidebar_fragment.xml
 new file mode 100644
@@ -162,7 +189,7 @@ index 0000000..cf62645
 +
 +</PreferenceScreen>
 diff --git a/res/xml/recents.xml b/res/xml/recents.xml
-index 4899996..1146d16 100644
+index c88112f..261f329 100644
 --- a/res/xml/recents.xml
 +++ b/res/xml/recents.xml
 @@ -142,4 +142,16 @@
@@ -523,5 +550,5 @@ index 0000000..fac1f3f
 +    }
 +}
 -- 
-1.9.1
+2.5.0
 

@@ -1,0 +1,27 @@
+From 8dfdeb5f7846d7571344f91cc363535de47d66ff Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 30 Jul 2016 00:17:33 +0000
+Subject: [PATCH] Dont exec vendor/extra/patch.sh
+
+Change-Id: I35d4adad5b59934ed6e21a8557dcda524cf76ab6
+---
+ envsetup.sh | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/envsetup.sh b/envsetup.sh
+index 84ed661..cc1d964 100644
+--- a/envsetup.sh
++++ b/envsetup.sh
+@@ -280,8 +280,8 @@ function set_stuff_for_environment()
+     set_java_home
+     setpaths
+     set_sequence_number
+-    patchvendortree
+     if [ "$PATCHMODE" = "true" ]; then
++    patchvendortree
+     patchdevicetree
+     fi
+     export ANDROID_BUILD_TOP=$(gettop)
+-- 
+2.5.0
+
