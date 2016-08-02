@@ -14,7 +14,7 @@ ifeq (arm,$(TARGET_ARCH))
 
 
 # CLANG TOOLCHAIN INFO
-ifeq (1,$(words $(filter 3.9,$(TARGET_CLANG_VERSION_EXP))))
+ifeq (1,$(words $(filter 3.9 4.0,$(TARGET_CLANG_VERSION_EXP))))
 	TARGET_DRAGONTC_VERSION := $(TARGET_CLANG_VERSION_EXP)
 	DTC_PATH := prebuilts/clang/linux-x86/host/$(TARGET_DRAGONTC_VERSION)
 	DTC_VER := $(shell cat $(DTC_PATH)/VERSION)
