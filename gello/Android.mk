@@ -25,7 +25,13 @@ LOCAL_CERTIFICATE := $(DEFAULT_SYSTEM_DEV_CERTIFICATE)
 
 LOCAL_OVERRIDES_PACKAGES := Browser
 
+WITH_GELLO_SOURCE := true
+
+./install-build-deps-android.sh
+
 ifeq ($(WITH_GELLO_SOURCE),true)
+BUILD_GELLO := $(info $(shell bash $(SOURCE_GELLO_PATH)/gello_build.sh --depot 1>&2))
+
 # Build from source
 ifeq ($(LOCAL_GELLO),true)
 BUILD_GELLO := $(info $(shell bash $(SOURCE_GELLO_PATH)/gello_build.sh --local 1>&2))
