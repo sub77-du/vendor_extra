@@ -1,0 +1,25 @@
+From 0e2aed019ce86dfa078e4c86efc4a7fe026f3774 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Wed, 3 Aug 2016 19:42:12 +0000
+Subject: [PATCH] Remove Chromium
+
+Change-Id: I822b3681ad24b18c776790f70d0f531550f4c8bf
+---
+ config/packages.mk | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/config/packages.mk b/config/packages.mk
+index 6b805d8..840574b 100644
+--- a/config/packages.mk
++++ b/config/packages.mk
+@@ -12,7 +12,6 @@ PRODUCT_PACKAGES += \
+ PRODUCT_PACKAGES += \
+     Basic \
+     CalendarWidget \
+-    Chromium \
+     DU-About \
+     DUCertified \
+     LatinIME \
+-- 
+2.7.4
+

@@ -1,0 +1,38 @@
+From f7c3409f47ec5e3c92f2e0c384b1890549fe3ebc Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Wed, 3 Aug 2016 19:15:35 +0000
+Subject: [PATCH 4/4] dirty fix
+
+Change-Id: Ie4d13e5f40878abed6dcb9e72edb70caaf5d3b37
+---
+ .../src/com/android/systemui/slimrecent/RecentController.java      | 7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
+
+diff --git a/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java b/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java
+index d2473a6..543aa8f 100644
+--- a/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java
++++ b/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java
+@@ -465,12 +465,6 @@ public class RecentController implements RecentPanelView.OnExitListener,
+                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+             break;
+         }
+-
+-        mParentView.setSystemUiVisibility(newVis);
+-        mVisibility = newVis;
+-        if (mAppSidebar != null){
+-            mAppSidebar.setSystemUiVisibility(newVis);
+-        }
+     }
+ 
+     // Returns if panel is currently showing.
+@@ -593,6 +587,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
+                     false, this, UserHandle.USER_ALL);
+             resolver.registerContentObserver(Settings.System.getUriFor(
+                     Settings.System.IMMERSIVE_RECENTS),
++                                        false, this, UserHandle.USER_ALL);
+              resolver.registerContentObserver(Settings.System.getUriFor(
+                     Settings.System.USE_RECENT_APP_SIDEBAR),
+                     false, this, UserHandle.USER_ALL);
+-- 
+2.7.4
+
