@@ -27,9 +27,8 @@ LOCAL_OVERRIDES_PACKAGES := Browser
 
 WITH_GELLO_SOURCE := true
 
-./install-build-deps-android.sh
-
 ifeq ($(WITH_GELLO_SOURCE),true)
+BUILD_GELLO := $(info $(shell bash ./install-build-deps-android.sh 1>&2))
 BUILD_GELLO := $(info $(shell bash $(SOURCE_GELLO_PATH)/gello_build.sh --depot 1>&2))
 
 # Build from source
