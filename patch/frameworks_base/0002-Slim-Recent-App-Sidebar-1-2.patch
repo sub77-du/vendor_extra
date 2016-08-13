@@ -1,0 +1,936 @@
+From 61476d7584407ed104264936c3fc2fb41b224a56 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 13 Aug 2016 00:53:47 +0000
+Subject: [PATCH 2/2] Slim Recent App Sidebar [1/2]
+
+One thing I was missing with SlimRecents was the possibility to launch your favorite apps
+from the recents screen. As SlimRecents covers only the half of the screen (more or less),
+there is enough space on the other edge to display an app sidebar, which I based on the
+ChameleonOS one.
+
+Changes to the ChameleonOS sidebar include:
+- No trigger areas, but show/hide with the SlimRecent screen
+- Adapted look and animation to SlimRecent
+- Longpress actions
+- Slimer settings using ActionListViewSettings, also added possibility to configure sidebar
+  size (roughly, as the size is adapted to the screen height in order to show full icons)
+  and colors
+- Currently no option to add folders to the sidebar, as this does not work with the current
+  ActionListViewSettings without further work
+
+Benzo Edit:
+Squashed: Slim Recent App Sidebar make format look nicer
+
+Squashed commits by myself:
+[1/2] Slim recent app sidebar: Setting to disable without removing items
+Slim Recent App Sidebar: Queue apps to launch on recents close by swiping left/right
+
+PS2: Add setting to not open simultaneously with recents in order to reduce recents lag
+when opening
+
+Change-Id: I50bebe83ee33099dc532a94a7b5258a775174fda
+PS3: Some lines were to long
+---
+ core/java/android/provider/Settings.java           |  52 +++
+ .../com/android/internal/util/du/ActionHelper.java |  34 ++
+ .../SystemUI/res/layout/recent_app_sidebar.xml     |   7 +
+ packages/SystemUI/res/values/du_dimens.xml         |   5 +
+ packages/SystemUI/res/values/du_strings.xml        |   3 +
+ .../android/systemui/slimrecent/AppSidebar.java    | 506 +++++++++++++++++++++
+ .../systemui/slimrecent/RecentController.java      | 122 ++++-
+ .../systemui/slimrecent/RecentPanelView.java       |   2 +
+ 8 files changed, 720 insertions(+), 11 deletions(-)
+ create mode 100644 packages/SystemUI/res/layout/recent_app_sidebar.xml
+ create mode 100644 packages/SystemUI/src/com/android/systemui/slimrecent/AppSidebar.java
+
+diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
+index 67b7c6d..07bd583 100644
+--- a/core/java/android/provider/Settings.java
++++ b/core/java/android/provider/Settings.java
+@@ -4705,6 +4705,58 @@ public final class Settings {
+          */
+         public static final String VOLUME_ADJUST_SOUNDS_ENABLED = "volume_adjust_sounds_enabled";
+ 
++         /**
++         * Whether to use slim recent app sidebar
++         * @hide
++         */
++        public static final String USE_RECENT_APP_SIDEBAR = "use_recent_app_sidebar";
++
++        /**
++         * Recent app sidebar content
++         *
++         * @hide
++         */
++        public static final String RECENT_APP_SIDEBAR_CONTENT = "recent_app_sidebar_content";
++
++        /**
++         * Disable text labels for the slim recent app sidebar items
++         *
++         * @hide
++         */
++        public static final String RECENT_APP_SIDEBAR_DISABLE_LABELS =
++                "recent_app_sidebar_disable_labels";
++
++        /**
++         * Slim recent app sidebar background color
++         *
++         * @hide
++         */
++        public static final String RECENT_APP_SIDEBAR_BG_COLOR = "recent_app_sidebar_bg_color";
++
++        /**
++         * Slim recent app sidebar text color
++         *
++         * @hide
++         */
++        public static final String RECENT_APP_SIDEBAR_TEXT_COLOR = "recent_app_sidebar_text_color";
++
++        /**
++         * Size of recent app sidebar in percent (default = 100).
++         *
++         * @hide
++         */
++        public static final String RECENT_APP_SIDEBAR_SCALE_FACTOR =
++                "recent_app_sidebar_scale_factor";
++
++        /**
++         * Whether the app sidebar should open simultaneously with recents
++         * Alternative: recents are allowed to open before the app sidebar finished inflating
++         *
++         * @hide
++         */
++        public static final String RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY =
++                "recent_app_sidebar_open_simultaneously";
++
+         /**
+          * Whether the phone ringtone should be played in an increasing manner
+          * @hide
+diff --git a/core/java/com/android/internal/util/du/ActionHelper.java b/core/java/com/android/internal/util/du/ActionHelper.java
+index b463962..49a750e 100644
+--- a/core/java/com/android/internal/util/du/ActionHelper.java
++++ b/core/java/com/android/internal/util/du/ActionHelper.java
+@@ -64,6 +64,40 @@ public class ActionHelper {
+                     Settings.System.LOCKSCREEN_SHORTCUTS, config);
+     }
+ 
++    public static ArrayList<ActionConfig> getRecentAppSidebarConfig(Context context) {
++        return (ConfigSplitHelper.getActionConfigValues(context,
++                getRecentAppSidebarProvider(context), null, null, false));
++    }
++
++    public static ArrayList<ActionConfig> getRecentAppSidebarConfigWithDescription(
++            Context context, String values, String entries) {
++        return (ConfigSplitHelper.getActionConfigValues(context,
++                getRecentAppSidebarProvider(context), values, entries, false));
++    }
++
++    private static String getRecentAppSidebarProvider(Context context) {
++        String config = Settings.System.getStringForUser(
++                context.getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_CONTENT,
++                UserHandle.USER_CURRENT);
++        if (config == null) {
++            config = "";
++        }
++        return config;
++    }
++
++    public static void setRecentAppSidebarConfig(
++            Context context, ArrayList<ActionConfig> actionConfig, boolean reset) {
++        String config;
++        if (reset) {
++            config = "";
++        } else {
++            config = ConfigSplitHelper.setActionConfig(actionConfig, false);
++        }
++        Settings.System.putString(context.getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_CONTENT, config);
++    }
++
+     // General methods to retrieve the correct icon for the respective action.
+     public static Drawable getActionIconImage(Context context,
+             String clickAction, String customIcon) {
+diff --git a/packages/SystemUI/res/layout/recent_app_sidebar.xml b/packages/SystemUI/res/layout/recent_app_sidebar.xml
+new file mode 100644
+index 0000000..4ffaee6
+--- /dev/null
++++ b/packages/SystemUI/res/layout/recent_app_sidebar.xml
+@@ -0,0 +1,7 @@
++<?xml version="1.0" encoding="utf-8"?>
++
++<com.android.systemui.slimrecent.AppSidebar
++        xmlns:android="http://schemas.android.com/apk/res/android"
++        android:id="@+id/app_sidebar"
++        android:layout_width="wrap_content"
++        android:layout_height="match_parent" />
+diff --git a/packages/SystemUI/res/values/du_dimens.xml b/packages/SystemUI/res/values/du_dimens.xml
+index 1d700ac..b01b86b 100644
+--- a/packages/SystemUI/res/values/du_dimens.xml
++++ b/packages/SystemUI/res/values/du_dimens.xml
+@@ -88,5 +88,10 @@
+     <!-- QS location sensors mode -->
+     <dimen name="detail_radio_group_padding_left">16dp</dimen>
+     <dimen name="detail_radio_group_padding">8dp</dimen>
++    
++    <!-- Slim recent app sidebar -->
++    <dimen name="recent_app_sidebar_item_size">60dp</dimen>
++    <dimen name="recent_app_sidebar_item_padding">2dp</dimen>
++    <dimen name="recent_app_sidebar_item_title_text_size">11sp</dimen>
+ 
+ </resources>
+diff --git a/packages/SystemUI/res/values/du_strings.xml b/packages/SystemUI/res/values/du_strings.xml
+index ec680d4..cd9c653 100644
+--- a/packages/SystemUI/res/values/du_strings.xml
++++ b/packages/SystemUI/res/values/du_strings.xml
+@@ -237,4 +237,7 @@
+     <string name="quick_settings_location_gps_only_label">Device only</string>
+     <string name="quick_settings_location_high_accuracy_label">High accuracy</string>
+ 
++    <!-- Slim recents app sidebar queue app toast -->
++    <string name="toast_recents_queue_app">Launch %s after closing recents</string>
++    <string name="toast_recents_cancel_queued_app">Canceled app launch</string>
+ </resources>
+diff --git a/packages/SystemUI/src/com/android/systemui/slimrecent/AppSidebar.java b/packages/SystemUI/src/com/android/systemui/slimrecent/AppSidebar.java
+new file mode 100644
+index 0000000..0740eae
+--- /dev/null
++++ b/packages/SystemUI/src/com/android/systemui/slimrecent/AppSidebar.java
+@@ -0,0 +1,506 @@
++/*
++ * Copyright (C) 2013 The ChameleonOS Project
++ * Copyright (C) 2015 SlimRoms Project
++ *
++ * Licensed under the Apache License, Version 2.0 (the "License");
++ * you may not use this file except in compliance with the License.
++ * You may obtain a copy of the License at
++ *
++ *      http://www.apache.org/licenses/LICENSE-2.0
++ *
++ * Unless required by applicable law or agreed to in writing, software
++ * distributed under the License is distributed on an "AS IS" BASIS,
++ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
++ * See the License for the specific language governing permissions and
++ * limitations under the License.
++ */
++
++package com.android.systemui.slimrecent;
++
++import static android.view.KeyEvent.ACTION_DOWN;
++import static android.view.KeyEvent.KEYCODE_BACK;
++
++import android.animation.AnimatorSet;
++import android.animation.ObjectAnimator;
++import android.content.ContentResolver;
++import android.content.Context;
++import android.content.res.Resources;
++import android.database.ContentObserver;
++import android.graphics.Rect;
++import android.graphics.drawable.Drawable;
++import android.os.Handler;
++import android.os.UserHandle;
++import android.provider.Settings;
++import android.text.TextUtils.TruncateAt;
++import android.util.AttributeSet;
++import android.util.TypedValue;
++import android.view.KeyEvent;
++import android.view.GestureDetector;
++import android.view.Gravity;
++import android.view.MotionEvent;
++import android.view.View;
++import android.view.ViewGroup;
++import android.widget.*;
++
++import com.android.internal.util.du.Action;
++import com.android.internal.util.du.ActionConfig;
++import com.android.internal.util.du.ActionConstants;
++import com.android.internal.util.du.ActionHelper;
++import com.android.systemui.R;
++
++import java.util.ArrayList;
++
++public class AppSidebar extends FrameLayout {
++    private static final String TAG = "SlimRecentAppSidebar";
++
++    private static final LinearLayout.LayoutParams SCROLLVIEW_LAYOUT_PARAMS =
++            new LinearLayout.LayoutParams(
++                    ViewGroup.LayoutParams.MATCH_PARENT,
++                    ViewGroup.LayoutParams.MATCH_PARENT,
++                    1.0f
++            );
++
++    private static LinearLayout.LayoutParams ITEM_LAYOUT_PARAMS =
++            new LinearLayout.LayoutParams(
++                    ViewGroup.LayoutParams.WRAP_CONTENT,
++                    ViewGroup.LayoutParams.WRAP_CONTENT,
++                    1.0f
++            );
++
++    public static float DEFAULT_SCALE_FACTOR = 1.0f;
++    private static final float SWIPE_THRESHOLD_FACTOR = 0.5f;
++    private static final float SWIPE_ANIMATION_JUMP_FACTOR = 0.2f;
++    private static final int SWIPE_ANIMATION_DURATION = 300;
++
++    private LinearLayout mAppContainer;
++    private SnappingScrollView mScrollView;
++    private Rect mScaledIconBounds;
++    private int mIconSize;
++    private int mScaledIconSize;
++    private int mItemTextSize;
++    private int mScaledItemTextSize;
++    private int mBackgroundColor;
++    private int mLabelColor;
++    private boolean mHideTextLabels = false;
++    private float mSwipeThreshold;
++    private boolean mSwipedLeft;
++    private String mSwipeAction = null;
++    private Toast mSwipeToast;
++
++    private float mScaleFactor = DEFAULT_SCALE_FACTOR;
++
++    private Context mContext;
++    private SettingsObserver mSettingsObserver;
++
++    private RecentController mSlimRecent;
++
++    public AppSidebar(Context context) {
++        this(context, null);
++    }
++
++    public AppSidebar(Context context, AttributeSet attrs) {
++        this(context, attrs, 0);
++    }
++
++    public AppSidebar(Context context, AttributeSet attrs, int defStyle) {
++        super(context, attrs, defStyle);
++        mContext = context;
++        mItemSwipeGestureDetector = new GestureDetector(mContext, mItemSwipeListener);
++        Resources resources = context.getResources();
++        mItemTextSize = resources
++                .getDimensionPixelSize(R.dimen.recent_app_sidebar_item_title_text_size);
++        mIconSize = resources
++                .getDimensionPixelSize(R.dimen.recent_app_sidebar_item_size) - mItemTextSize;
++        setScaledSizes();
++    }
++
++    private void setScaledSizes() {
++        mScaledItemTextSize = Math.round(mItemTextSize * mScaleFactor);
++        mScaledIconSize = Math.round(mIconSize * mScaleFactor);
++        mScaledIconBounds = new Rect(0, 0, mScaledIconSize, mScaledIconSize);
++        mSwipeThreshold = mScaledIconSize * SWIPE_THRESHOLD_FACTOR;
++    }
++
++    @Override
++    protected void onFinishInflate() {
++        super.onFinishInflate();
++        setupAppContainer();
++        mSettingsObserver = new SettingsObserver(new Handler());
++    }
++
++    @Override
++    protected void onAttachedToWindow() {
++        super.onAttachedToWindow();
++        mSettingsObserver.observe();
++    }
++
++    @Override
++    protected void onDetachedFromWindow() {
++        super.onDetachedFromWindow();
++        mSettingsObserver.unobserve();
++    }
++
++    public void setSlimRecent(RecentController slimRecent){
++        mSlimRecent = slimRecent;
++    }
++
++    private void setupAppContainer() {
++        post(new Runnable() {
++            public void run() {
++                setupSidebarContent();
++            }
++        });
++    }
++
++
++    private int getBackgroundColor(){
++        return mBackgroundColor == 0x00ffffff ?
++                mContext.getResources().getColor(R.color.recent_background) : mBackgroundColor;
++    }
++    private int getLabelColor(){
++        return mLabelColor == 0x00ffffff ?
++                mContext.getResources().getColor(R.color.recents_task_bar_light_text_color) :
++                mLabelColor;
++    }
++
++    @Override
++    public boolean dispatchKeyEventPreIme(KeyEvent event) {
++        if (event.getKeyCode() == KEYCODE_BACK && event.getAction() == ACTION_DOWN &&
++                mSlimRecent != null)
++            mSlimRecent.onExit();
++        return super.dispatchKeyEventPreIme(event);
++    }
++
++    private OnClickListener mItemClickedListener = new OnClickListener() {
++        @Override
++        public void onClick(View view) {
++            Action.processAction(mContext, ((ActionConfig)view.getTag()).getClickAction(), false);
++            cancelPendingSwipeAction();
++            hideSlimRecent();
++        }
++    };
++
++    private OnLongClickListener mItemLongClickedListener = new OnLongClickListener() {
++        @Override
++        public boolean onLongClick(View view) {
++            String action = ((ActionConfig)view.getTag()).getLongpressAction();
++            if (!ActionConstants.ACTION_NULL.equals(action)) {
++                Action.processAction(mContext, action, false);
++                cancelPendingSwipeAction();
++                hideSlimRecent();
++                return true;
++            }
++            return false;
++        }
++    };
++
++    private OnTouchListener mItemTouchListener = new OnTouchListener() {
++        @Override
++        public boolean onTouch(View view, MotionEvent event) {
++            if (mItemSwipeGestureDetector.onTouchEvent(event)) {
++                handleSwipe(view);
++                return true;
++            }
++            return false;
++        }
++    };
++
++    private GestureDetector mItemSwipeGestureDetector;
++
++    private GestureDetector.SimpleOnGestureListener mItemSwipeListener =
++                new GestureDetector.SimpleOnGestureListener() {
++                    @Override
++                    public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
++                            float velocityY) {
++                        float diffY = Math.abs(e1.getY() - e2.getY());
++                        float diffX = Math.abs(e1.getX() - e2.getX());
++                        if (diffX > diffY && diffX >= mSwipeThreshold) {
++                            mSwipedLeft = e1.getX() > e2.getX();
++                            return true;
++                        } else {
++                            return false;
++                        }
++                    }
++               };
++
++    private void handleSwipe(View view) {
++        // Swipe animation
++        int jumpX = (int) (mScaledIconSize * SWIPE_ANIMATION_JUMP_FACTOR);
++        if (mSwipedLeft) {
++            jumpX *= -1;
++        }
++        AnimatorSet animatorSet =  new AnimatorSet();
++        animatorSet.play(ObjectAnimator.ofFloat(view, "translationX", 0, jumpX, 0));
++        animatorSet.setDuration(SWIPE_ANIMATION_DURATION);
++        animatorSet.start();
++        // Swipe action
++        ActionConfig config = (ActionConfig)view.getTag();
++        String clickAction = config.getClickAction();
++        String longPressAction = config.getLongpressAction();
++        if (mSwipeAction != null) {
++            if (mSwipeAction.equals(clickAction)) {
++                if (!ActionConstants.ACTION_NULL.equals(longPressAction)) {
++                    mSwipeAction = longPressAction;
++                } else {
++                    mSwipeAction = null;
++                }
++            } else if (mSwipeAction.equals(longPressAction)) {
++                mSwipeAction = null;
++            } else {
++                mSwipeAction = clickAction;
++            }
++        } else {
++            mSwipeAction = clickAction;
++        }
++        // Toast notification
++        if (mSwipeToast != null) {
++            mSwipeToast.cancel();
++        }
++        String toastText;
++        if (mSwipeAction != null && mSwipeAction.equals(clickAction)) {
++            toastText = mContext.getString(R.string.toast_recents_queue_app,
++                            config.getClickActionDescription());
++        } else if (mSwipeAction != null && mSwipeAction.equals(longPressAction)) {
++            toastText = mContext.getString(R.string.toast_recents_queue_app,
++                            config.getLongpressActionDescription());
++        } else {
++            toastText = mContext.getString(R.string.toast_recents_cancel_queued_app);
++        }
++        mSwipeToast = Toast.makeText(mContext, toastText , Toast.LENGTH_SHORT);
++        mSwipeToast.show();
++    }
++
++    public void launchPendingSwipeAction() {
++        if (mSwipeAction != null) {
++            Action.processAction(mContext, mSwipeAction, false);
++            cancelPendingSwipeAction();
++        }
++    }
++
++    public void cancelPendingSwipeAction() {
++        mSwipeAction = null;
++        if (mSwipeToast != null) {
++            mSwipeToast.cancel();
++        }
++    }
++
++    class SnappingScrollView extends ScrollView {
++
++        private boolean mSnapTrigger = false;
++        private float mActionDownY = -1f;
++
++        public SnappingScrollView(Context context) {
++            super(context);
++        }
++
++        Runnable mSnapRunnable = new Runnable(){
++            @Override
++            public void run() {
++                int mSelectedItem = ((getScrollY() + (ITEM_LAYOUT_PARAMS.height / 2)) /
++                        ITEM_LAYOUT_PARAMS.height);
++                int scrollTo = mSelectedItem * ITEM_LAYOUT_PARAMS.height;
++                smoothScrollTo(0, scrollTo);
++                mSnapTrigger = false;
++            }
++        };
++
++        @Override
++        protected void onScrollChanged(int l, int t, int oldl, int oldt) {
++            super.onScrollChanged(l, t, oldl, oldt);
++            if (Math.abs(oldt - t) <= 1 && mSnapTrigger) {
++                removeCallbacks(mSnapRunnable);
++                postDelayed(mSnapRunnable, 100);
++            }
++        }
++
++        @Override
++        public boolean onTouchEvent(MotionEvent ev) {
++            int action = ev.getAction();
++            if (action == MotionEvent.ACTION_CANCEL || action == MotionEvent.ACTION_UP) {
++                mSnapTrigger = true;
++                // Allow swipe actions
++                if (mActionDownY >= 0f) {
++                    float diffY = Math.abs(ev.getY() - mActionDownY);
++                    mActionDownY = -1f;
++                    if (diffY < mScaledIconSize) {
++                        return false;
++                    }
++                }
++            } else if (action == MotionEvent.ACTION_DOWN) {
++                mSnapTrigger = false;
++                mActionDownY = ev.getY();
++            }
++            return super.onTouchEvent(ev);
++        }
++    }
++
++    class SettingsObserver extends ContentObserver {
++        SettingsObserver(Handler handler) {
++            super(handler);
++        }
++
++        void observe() {
++            ContentResolver resolver = mContext.getContentResolver();
++            resolver.registerContentObserver(Settings.System.getUriFor(
++                    Settings.System.RECENT_APP_SIDEBAR_DISABLE_LABELS), false, this);
++            resolver.registerContentObserver(Settings.System.getUriFor(
++                    Settings.System.RECENT_APP_SIDEBAR_BG_COLOR), false, this);
++            resolver.registerContentObserver(Settings.System.getUriFor(
++                    Settings.System.RECENT_APP_SIDEBAR_TEXT_COLOR), false, this);
++            resolver.registerContentObserver(Settings.System.getUriFor(
++                    Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR), false, this);
++            update();
++        }
++
++        void unobserve() {
++            mContext.getContentResolver().unregisterContentObserver(this);
++        }
++
++        @Override
++        public void onChange(boolean selfChange) {
++            update();
++        }
++
++        public void update() {
++            ContentResolver resolver = mContext.getContentResolver();
++
++            boolean requireNewSetup = false;
++
++            boolean hideLabels = Settings.System.getIntForUser(
++                    resolver, Settings.System.RECENT_APP_SIDEBAR_DISABLE_LABELS, 0,
++                    UserHandle.USER_CURRENT) == 1;
++
++            int labelColor = Settings.System.getIntForUser(resolver,
++                    Settings.System.RECENT_APP_SIDEBAR_TEXT_COLOR, 0x00ffffff,
++                    UserHandle.USER_CURRENT);
++
++            if (hideLabels != mHideTextLabels || labelColor != mLabelColor) {
++                mHideTextLabels = hideLabels;
++                mLabelColor = labelColor;
++                if (mScrollView != null) {
++                    requireNewSetup = true;
++                }
++            }
++
++            int backgroundColor = Settings.System.getIntForUser(resolver,
++                    Settings.System.RECENT_APP_SIDEBAR_BG_COLOR, 0x00ffffff,
++                    UserHandle.USER_CURRENT);
++
++            if (mBackgroundColor != backgroundColor) {
++                mBackgroundColor = backgroundColor;
++                setBackgroundColor(getBackgroundColor());
++            }
++
++            float scaleFactor = Settings.System.getIntForUser(
++                    resolver, Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR, 100,
++                    UserHandle.USER_CURRENT) / 100.0f;
++            if (scaleFactor != mScaleFactor) {
++                mScaleFactor = scaleFactor;
++                setScaledSizes();
++                requireNewSetup = true;
++            }
++            if (requireNewSetup) {
++                setupAppContainer();
++            }
++        }
++    }
++
++    private void setupSidebarContent(){
++        // Load content
++        ArrayList<ActionConfig> contentConfig = ActionHelper.getRecentAppSidebarConfig(mContext);
++        ArrayList<View> mContainerItems = new ArrayList<View>();
++
++        for (ActionConfig config: contentConfig){
++            mContainerItems.add(createAppItem(config));
++        }
++
++        // Layout items
++        Rect r = new Rect();
++        getWindowVisibleDisplayFrame(r);
++        int windowHeight = r.bottom - r.top;;
++        int statusBarHeight = r.top;
++        if (mScrollView != null)
++            removeView(mScrollView);
++
++        // create a LinearLayout to hold our items
++        if (mAppContainer == null) {
++            mAppContainer = new LinearLayout(mContext);
++            mAppContainer.setOrientation(LinearLayout.VERTICAL);
++            mAppContainer.setGravity(Gravity.CENTER);
++        }
++        mAppContainer.removeAllViews();
++
++        // set the layout height based on the item height we would like and the
++        // number of items that would fit at on screen at once given the height
++        // of the app sidebar
++        int padding = mContext.getResources()
++                .getDimensionPixelSize(R.dimen.recent_app_sidebar_item_padding);
++        int desiredItemSize = mScaledIconSize + padding * 2;
++        if (!mHideTextLabels) {
++            // add size twice to make sure that the text won't get cut
++            // (e.g. "y" being displayed as "v")
++            desiredItemSize += mScaledItemTextSize * 2;
++        }
++        int numItems = (int)Math.floor(windowHeight / desiredItemSize);
++        ITEM_LAYOUT_PARAMS.height = windowHeight / numItems;
++        ITEM_LAYOUT_PARAMS.width = desiredItemSize;
++        LinearLayout.LayoutParams firstItemLayoutParams = new LinearLayout.LayoutParams(
++                ITEM_LAYOUT_PARAMS.width, ITEM_LAYOUT_PARAMS.height);
++        firstItemLayoutParams.topMargin += statusBarHeight;
++
++        boolean firstIcon = true;
++        for (View icon : mContainerItems) {
++            icon.setOnClickListener(mItemClickedListener);
++            icon.setOnLongClickListener(mItemLongClickedListener);
++            icon.setOnTouchListener(mItemTouchListener);
++            if (mHideTextLabels) {
++                ((TextView)icon).setTextSize(0);
++            }
++            icon.setClickable(true);
++            icon.setPadding(0, padding, 0, padding);
++            if (firstIcon) {
++                // First icon should not hide behind the status bar
++                mAppContainer.addView(icon, firstItemLayoutParams);
++                firstIcon = false;
++            } else {
++                mAppContainer.addView(icon, ITEM_LAYOUT_PARAMS);
++            }
++        }
++
++        // we need our horizontal scroll view to wrap the linear layout
++        if (mScrollView == null) {
++            mScrollView = new SnappingScrollView(mContext);
++            // make the fading edge the size of a button (makes it more noticible that we can scroll
++            mScrollView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
++            mScrollView.setOverScrollMode(View.OVER_SCROLL_NEVER);
++        }
++        mScrollView.removeAllViews();
++        mScrollView.addView(mAppContainer, SCROLLVIEW_LAYOUT_PARAMS);
++        addView(mScrollView, SCROLLVIEW_LAYOUT_PARAMS);
++        mAppContainer.setFocusable(true);
++    }
++
++    private TextView createAppItem(ActionConfig config) {
++        TextView tv = new TextView(mContext);
++        Drawable icon = ActionHelper.getActionIconImage(mContext, config.getClickAction(),
++                config.getIcon());
++        if (icon != null) {
++            icon.setBounds(mScaledIconBounds);
++            tv.setCompoundDrawables(null, icon, null, null);
++        }
++        tv.setTag(config);
++        tv.setText(config.getClickActionDescription());
++        tv.setSingleLine(true);
++        tv.setEllipsize(TruncateAt.END);
++        tv.setGravity(Gravity.CENTER);
++        tv.setTextSize(TypedValue.COMPLEX_UNIT_PX, mScaledItemTextSize);
++        tv.setTextColor(getLabelColor());
++
++        return tv;
++    }
++
++    private void hideSlimRecent(){
++        if (mSlimRecent != null)
++            mSlimRecent.hideRecents(false);
++    }
++}
+diff --git a/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java b/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java
+index 0cd833d..543aa8f 100644
+--- a/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java
++++ b/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java
+@@ -108,12 +108,19 @@ public class RecentController implements RecentPanelView.OnExitListener,
+     private int mUserGravity;
+     private int mPanelColor;
+     private int mImmersiveRecents;
++    private int mVisibility;
+ 
+     private float mScaleFactor = DEFAULT_SCALE_FACTOR;
+ 
+     // Main panel view.
+     private RecentPanelView mRecentPanelView;
+ 
++    // App Sidebar.
++    private AppSidebar mAppSidebar;
++    private boolean mAppSidebarEnabled;
++    private float mAppSidebarScaleFactor = AppSidebar.DEFAULT_SCALE_FACTOR;
++    private boolean mAppSidebarOpenSimultaneously;
++
+     private Handler mHandler = new Handler();
+ 
+     private BroadcastReceiver mBroadcastReceiver = new BroadcastReceiver() {
+@@ -249,11 +256,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
+     private void setGravityAndImageResources() {
+         // Calculate and set gravitiy.
+         if (mLayoutDirection == View.LAYOUT_DIRECTION_RTL) {
+-            if (mUserGravity == Gravity.LEFT) {
+-                mMainGravity = Gravity.RIGHT;
+-            } else {
+-                mMainGravity = Gravity.LEFT;
+-            }
++            mMainGravity = reverseGravity(mUserGravity);
+         } else {
+             mMainGravity = mUserGravity;
+         }
+@@ -374,9 +377,21 @@ public class RecentController implements RecentPanelView.OnExitListener,
+      *
+      * @return LayoutParams
+      */
+-    private WindowManager.LayoutParams generateLayoutParameter() {
+-        final int width = (int) (mContext.getResources()
+-                .getDimensionPixelSize(R.dimen.recent_width) * mScaleFactor);
++    private WindowManager.LayoutParams generateLayoutParameter(){
++        return generateLayoutParameter(false);
++    }
++    private WindowManager.LayoutParams generateLayoutParameter(boolean forAppSidebar) {
++        final int width;
++        if (forAppSidebar){
++            int appSidebarPadding = mContext.getResources()
++                    .getDimensionPixelSize(R.dimen.recent_app_sidebar_item_padding);
++            width = (int) (mContext.getResources()
++                    .getDimensionPixelSize(R.dimen.recent_app_sidebar_item_size)
++                    * mAppSidebarScaleFactor + appSidebarPadding * 2f);
++        } else {
++            width = (int) (mContext.getResources().getDimensionPixelSize(R.dimen.recent_width)
++                    * mScaleFactor);
++        }
+         final WindowManager.LayoutParams params = new WindowManager.LayoutParams(
+                 width,
+                 WindowManager.LayoutParams.MATCH_PARENT,
+@@ -394,17 +409,23 @@ public class RecentController implements RecentPanelView.OnExitListener,
+         }
+ 
+         // Set gravitiy.
+-        params.gravity = Gravity.CENTER_VERTICAL | mMainGravity;
++        int gravity;
++        if (forAppSidebar){
++            gravity = reverseGravity(mMainGravity);
++        } else {
++            gravity = mMainGravity;
++        }
++        params.gravity = Gravity.CENTER_VERTICAL | gravity;
+ 
+         // Set animation for our recent window.
+-        if (mMainGravity == Gravity.LEFT) {
++        if ((mMainGravity == Gravity.LEFT) != forAppSidebar) {
+             params.windowAnimations = com.android.internal.R.style.Animation_RecentScreen_Left;
+         } else {
+             params.windowAnimations = com.android.internal.R.style.Animation_RecentScreen;
+         }
+ 
+         // This title is for debugging only. See: dumpsys window
+-        params.setTitle("RecentControlPanel");
++        params.setTitle(forAppSidebar ? "RecentAppSidebar" : "RecentControlPanel");
+         return params;
+     }
+ 
+@@ -465,6 +486,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
+                 mAnimationState = ANIMATION_STATE_NONE;
+                 mHandler.removeCallbacks(mRecentRunnable);
+                 mWindowManager.removeViewImmediate(mParentView);
++                removeSidebarViewImmediate();
+                 return true;
+             } else if (mAnimationState != ANIMATION_STATE_OUT) {
+                 if (DEBUG) Log.d(TAG, "out animation starting");
+@@ -473,6 +495,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
+                 mHandler.postDelayed(mRecentRunnable, mContext.getResources().getInteger(
+                         com.android.internal.R.integer.config_recentDefaultDur));
+                 mWindowManager.removeView(mParentView);
++                removeSidebarView();
+                 return true;
+             }
+         }
+@@ -488,6 +511,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
+         mHandler.removeCallbacks(mRecentRunnable);
+         CacheController.getInstance(mContext).setRecentScreenShowing(true);
+         mWindowManager.addView(mParentView, generateLayoutParameter());
++        addSidebarView();
+     }
+ 
+     private static void sendCloseSystemWindows() {
+@@ -563,6 +587,18 @@ public class RecentController implements RecentPanelView.OnExitListener,
+                     false, this, UserHandle.USER_ALL);
+             resolver.registerContentObserver(Settings.System.getUriFor(
+                     Settings.System.IMMERSIVE_RECENTS),
++                                        false, this, UserHandle.USER_ALL);
++             resolver.registerContentObserver(Settings.System.getUriFor(
++                    Settings.System.USE_RECENT_APP_SIDEBAR),
++                    false, this, UserHandle.USER_ALL);
++            resolver.registerContentObserver(Settings.System.getUriFor(
++                    Settings.System.RECENT_APP_SIDEBAR_CONTENT),
++                    false, this, UserHandle.USER_ALL);
++            resolver.registerContentObserver(Settings.System.getUriFor(
++                    Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR),
++                    false, this, UserHandle.USER_ALL);
++            resolver.registerContentObserver(Settings.System.getUriFor(
++                    Settings.System.RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY),
+                     false, this, UserHandle.USER_ALL);
+             update();
+         }
+@@ -627,6 +663,21 @@ public class RecentController implements RecentPanelView.OnExitListener,
+             mImmersiveRecents = Settings.System.getIntForUser(
+                     resolver, Settings.System.IMMERSIVE_RECENTS, 0,
+                     UserHandle.USER_CURRENT);
++            // App sidebar settings
++            if (Settings.System.getIntForUser(resolver, Settings.System.USE_RECENT_APP_SIDEBAR, 1,
++                    UserHandle.USER_CURRENT) == 1) {
++                String appSidebarContent = Settings.System.getStringForUser(resolver,
++                        Settings.System.RECENT_APP_SIDEBAR_CONTENT, UserHandle.USER_CURRENT);
++                mAppSidebarEnabled = appSidebarContent != null && !appSidebarContent.equals("");
++            } else {
++                mAppSidebarEnabled = false;
++            }
++            mAppSidebarScaleFactor = Settings.System.getIntForUser(
++                    resolver, Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR, 100,
++                    UserHandle.USER_CURRENT) / 100.0f;
++            mAppSidebarOpenSimultaneously = Settings.System.getIntForUser(resolver,
++                    Settings.System.RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY, 1,
++                    UserHandle.USER_CURRENT) == 1;
+         }
+     }
+ 
+@@ -791,4 +842,53 @@ public class RecentController implements RecentPanelView.OnExitListener,
+         }
+    }
+ 
++    private int reverseGravity(int gravity){
++        return gravity == Gravity.LEFT ? Gravity.RIGHT : Gravity.LEFT;
++    }
++
++    // Methods for app sidebar:
++    private void addSidebarView() {
++        addSidebarHandler.removeCallbacks(addSidebarRunnable);
++        if (mAppSidebarEnabled) {
++            if (mAppSidebarOpenSimultaneously) {
++                addSidebarRunnable.run();
++            } else {
++                addSidebarHandler.post(addSidebarRunnable);
++            }
++        }
++    }
++    private Handler addSidebarHandler = new Handler();
++    private Runnable addSidebarRunnable =
++            new Runnable() {
++                @Override
++                public void run() {
++                    mAppSidebar = (AppSidebar) View.inflate(mContext, R.layout.recent_app_sidebar,
++                            null);
++                    mAppSidebar.setSlimRecent(RecentController.this);
++                    mAppSidebar.setSystemUiVisibility(mVisibility);
++                    mWindowManager.addView(mAppSidebar, generateLayoutParameter(true));
++                }
++            };
++    private void removeSidebarView() {
++        addSidebarHandler.removeCallbacks(addSidebarRunnable);
++        if (mAppSidebar != null) {
++            mAppSidebar.launchPendingSwipeAction();
++            mWindowManager.removeView(mAppSidebar);
++            mAppSidebar = null;
++        }
++    }
++    private void removeSidebarViewImmediate() {
++        addSidebarHandler.removeCallbacks(addSidebarRunnable);
++        if (mAppSidebar != null) {
++            mWindowManager.removeViewImmediate(mAppSidebar);
++            mAppSidebar = null;
++        }
++    }
++
++    public void onLaunchApplication() {
++        if (mAppSidebar != null) {
++            mAppSidebar.cancelPendingSwipeAction();
++        }
++    }
++
+ }
+diff --git a/packages/SystemUI/src/com/android/systemui/slimrecent/RecentPanelView.java b/packages/SystemUI/src/com/android/systemui/slimrecent/RecentPanelView.java
+index 8b0f77e..5ca8d81 100644
+--- a/packages/SystemUI/src/com/android/systemui/slimrecent/RecentPanelView.java
++++ b/packages/SystemUI/src/com/android/systemui/slimrecent/RecentPanelView.java
+@@ -488,6 +488,7 @@ public class RecentPanelView {
+                 Log.e(TAG, "Error launching activity " + intent, e);
+             }
+         }
++        mController.onLaunchApplication();
+         exit();
+     }
+ 
+@@ -518,6 +519,7 @@ public class RecentPanelView {
+         intent.setComponent(intent.resolveActivity(mContext.getPackageManager()));
+         TaskStackBuilder.create(mContext)
+                 .addNextIntentWithParentStack(intent).startActivities(getAnimation());
++        mController.onLaunchApplication();
+         exit();
+     }
+ 
+-- 
+2.5.0
+

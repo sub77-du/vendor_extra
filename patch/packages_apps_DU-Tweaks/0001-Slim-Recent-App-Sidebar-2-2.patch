@@ -1,63 +1,85 @@
-From f42895e94baf3222fefbb3b80f9e3eb43f35f39e Mon Sep 17 00:00:00 2001
+From 4a1f25daff5141349aea1b9befc21f7f46275054 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Mon, 8 Aug 2016 21:56:17 +0200
-Subject: [PATCH 1/2] [2/2] Slim Recent App Sidebar
+Date: Fri, 10 Jun 2016 19:44:09 -0500
+Subject: [PATCH] Slim Recent App Sidebar [2/2]
 
-One thing I was missing with SlimRecents was the possibility to launch your favorite apps from the recents screen. As SlimRecents covers only the half of the screen (more or less), there is enough space on the other edge to display an app sidebar, which I based on the ChameleonOS one.
+One thing I was missing with SlimRecents was the possibility to launch your favorite apps
+from the recents screen. As SlimRecents covers only the half of the screen (more or less),
+there is enough space on the other edge to display an app sidebar, which I based on the
+ChameleonOS one.
 
 Changes to the ChameleonOS sidebar include:
 - No trigger areas, but show/hide with the SlimRecent screen
 - Adapted look and animation to SlimRecent
 - Longpress actions
-- Slimer settings using ActionListViewSettings, also added possibility to configure sidebar size (roughly, as the size is adapted to the screen height in order to show full icons) and colors
-- Currently no option to add folders to the sidebar, as this does not work with the current ActionListViewSettings without further work
+- Slimer settings using ActionListViewSettings, also added possibility to configure sidebar
+  size (roughly, as the size is adapted to the screen height in order to show full icons)
+  and colors
+- Currently no option to add folders to the sidebar, as this does not work with the current
+  ActionListViewSettings without further work
 
-Change-Id: I3acc2327dce3aae01d5ae722204639b213c5f750
+Squashed commit:
+[2/2] Slim recent app sidebar: Setting to disable without removing items
+
+PS2: Add setting to not open simultaneously with recents in order to reduce recents lag
+when opening
+
+PS3: Some lines were to long
+
+Change-Id: I40a60bb16de3f84a65371b08074dec2efcfdc4ec
 ---
- res/values/strings.xml                             |  28 +++
- res/xml/recent_app_sidebar_fragment.xml            |  25 +++
- res/xml/recent_app_sidebar_settings.xml            |  48 ++++++
- res/xml/recent_panel_settings.xml                  | 162 +++++++++++++++++
+ res/values/strings.xml                             |  40 ++--
+ res/xml/recent_app_sidebar_fragment.xml            |  30 +++
+ res/xml/recent_app_sidebar_settings.xml            |  55 ++++++
  res/xml/recents.xml                                |  12 ++
  .../dutweaks/dslv/ActionListViewSettings.java      |   8 +
- .../dutweaks/fragments/RecentAppSidebar.java       | 191 +++++++++++++++++++++
- .../fragments/RecentAppSidebarFragment.java        |  56 ++++++
- 8 files changed, 530 insertions(+)
+ .../dutweaks/fragments/RecentAppSidebar.java       | 205 +++++++++++++++++++++
+ .../fragments/RecentAppSidebarFragment.java        |  83 +++++++++
+ 7 files changed, 406 insertions(+), 27 deletions(-)
  create mode 100644 res/xml/recent_app_sidebar_fragment.xml
  create mode 100644 res/xml/recent_app_sidebar_settings.xml
- create mode 100644 res/xml/recent_panel_settings.xml
  create mode 100644 src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebar.java
  create mode 100644 src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebarFragment.java
 
 diff --git a/res/values/strings.xml b/res/values/strings.xml
-index 596a1d8..501a717 100644
+index 4123fe3..26213c3 100644
 --- a/res/values/strings.xml
 +++ b/res/values/strings.xml
-@@ -1027,5 +1027,33 @@
+@@ -997,32 +997,18 @@
+     <string name="screenshot_crop_behavior_title">Crop mode</string>
+     <string name="screenshot_crop_behavior_summary">Always use the cropped image inside the cropping area, even if the apply button hasn\'t been pressed</string>
  
-     <!-- Navbar buttons transparency -->
-     <string name="navbar_buttons_alpha_title">Buttons transparency</string>
-+    
-+    <!-- Slim Recents -->
-+    <string name="slim_recents_panel">Slim Recents</string>
-+    <string name="use_slim_recents_title">Slim recents</string>
-+    <string name="show_running_tasks_title">Only show running apps</string>
-+    <string name="recents_max_apps_title">Max allowed apps</string>
-+    <string name="recent_panel_scale_title">Size</string>
-+    <string name="recent_panel_expanded_mode_title">Expanded mode</string>
-+    <string name="recent_panel_expanded_mode_summary">Recent tasks expanded preview mode</string>
-+    <string name="recent_panel_expanded_mode_auto">Auto (default)</string>
-+    <string name="recent_panel_expanded_mode_always">Always</string>
-+    <string name="recent_panel_expanded_mode_never">Never</string>
-+    <string name="recent_panel_show_topmost_title">Show topmost task</string>
-+    <string name="recent_panel_show_topmost_summary">Don\'t exclude the topmost task in recents view</string>
-+    <string name="recent_panel_bg_color_title">Panel background color</string>
-+    <string name="recent_card_bg_color_title">Card background color</string>
-+    <string name="recent_card_text_color_title">Card text color</string>
-+    <!-- ATTENTION: RTL languages need to replace left with right -->
-+    <string name="recent_panel_lefty_mode_title">Show on the left edge</string>
-+    <string name="recent_panel_lefty_mode_summary">Show recent apps panel on the left edge</string>
+-    <!-- Three finger swipe gesture -->
+-    <string name="three_finger_gesture_info">After selecting a target from below, swipe vertically with 3 fingers in a single motion from top to bottom to trigger the action you selected.</string>
+-    <string name="three_finger_swipe_gesture_title">Three finger swipe gesture</string>
+-
+-    <!-- DirtyTweaks tabs slide effects -->
+-    <string name="tabs_effect_title">Dirty Tweaks tabs transition effect</string>
+-    <string name="effect_default">Default</string>
+-    <string name="effect_accordion">Accordion</string>
+-    <string name="effect_background_to_foreground">Background to foreground</string>
+-    <string name="effect_cube_in">Cube in</string>
+-    <string name="effect_cube_out">Cube out</string>
+-    <string name="effect_depth_page">Depth page</string>
+-    <string name="effect_flip_horizontal">Flip horizontal</string>
+-    <string name="effect_flip_vertical">Flip vertical</string>
+-    <string name="effect_foreground_to_background">Foreground to background</string>
+-    <string name="effect_rotate_down">Rotate down</string>
+-    <string name="effect_rotate_up">Rotate up</string>
+-    <string name="effect_scale_in_out">Scale in out</string>
+-    <string name="effect_stack">Stack</string>
+-    <string name="effect_tablet">Tablet</string>
+-    <string name="effect_zoom_in">Zoom in</string>
+-    <string name="effect_zoom_out_slide">Zoom out slide</string>
+-    <string name="effect_zoom_out">Zoom out</string>
+-
+-    <!-- QS location sensors mode -->
+-    <string name="qs_advanced_location_title">Advanced location settings</string>
+-    <string name="qs_advanced_location_summary">Enable advanced settings for location in quick settings</string>
++    <!-- Slim Recent App Sidebar  -->
++    <string name="recent_panel_category">Slim Recents</string>
 +    <string name="recent_app_sidebar_title">App sidebar</string>
++    <string name="use_recent_app_sidebar">Enable recent app sidebar</string>
 +    <string name="recent_app_sidebar_summary">Show app shortcuts on the other edge</string>
 +    <string name="recent_app_sidebar_style_title">Sidebar style</string>
 +    <string name="recent_app_sidebar_style_summary">Change recent app sidebar style</string>
@@ -65,14 +87,16 @@ index 596a1d8..501a717 100644
 +    <string name="recent_app_sidebar_label_color_title">Label color</string>
 +    <string name="recent_app_sidebar_bg_color_title">Background color</string>
 +    <string name="recent_app_sidebar_scale_title">Size</string>
++    <string name="recent_app_sidebar_open_simultaneously_title">Open simultaneously with recents</string>
++    <string name="recent_app_sidebar_open_simultaneously_summary">Reduce recents opening lag by disabling this</string>
  
  </resources>
 diff --git a/res/xml/recent_app_sidebar_fragment.xml b/res/xml/recent_app_sidebar_fragment.xml
 new file mode 100644
-index 0000000..162f8d6
+index 0000000..fddb30c
 --- /dev/null
 +++ b/res/xml/recent_app_sidebar_fragment.xml
-@@ -0,0 +1,25 @@
+@@ -0,0 +1,30 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<!-- Copyright (C) 2015 Slimroms Project
 +
@@ -91,8 +115,13 @@ index 0000000..162f8d6
 +
 +<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
 +
++    <SwitchPreference
++            android:key="use_recent_app_sidebar"
++            android:title="@string/use_recent_app_sidebar"
++            android:defaultValue="true" />
++
 +    <PreferenceScreen
-+        android:fragment="com.android.settings.slim.RecentAppSidebar"
++        android:fragment="com.dirtyunicorns.dutweaks.fragments.RecentAppSidebar"
 +        android:key="recent_app_sidebar"
 +        android:title="@string/recent_app_sidebar_style_title"
 +        android:summary="@string/recent_app_sidebar_style_summary" />
@@ -100,10 +129,10 @@ index 0000000..162f8d6
 +</PreferenceScreen>
 diff --git a/res/xml/recent_app_sidebar_settings.xml b/res/xml/recent_app_sidebar_settings.xml
 new file mode 100644
-index 0000000..5a8d20b
+index 0000000..cf62645
 --- /dev/null
 +++ b/res/xml/recent_app_sidebar_settings.xml
-@@ -0,0 +1,48 @@
+@@ -0,0 +1,55 @@
 +<?xml version="1.0" encoding="utf-8"?>
 +<!-- Copyright (C) 2015 The SlimRoms Project
 +
@@ -151,198 +180,35 @@ index 0000000..5a8d20b
 +            alphaSlider="true"
 +            android:persistent="false" />
 +
-+</PreferenceScreen>
-diff --git a/res/xml/recent_panel_settings.xml b/res/xml/recent_panel_settings.xml
-new file mode 100644
-index 0000000..6edb84a
---- /dev/null
-+++ b/res/xml/recent_panel_settings.xml
-@@ -0,0 +1,162 @@
-+<?xml version="1.0" encoding="utf-8"?>
-+<!-- Copyright (C) 2015 The SlimRoms Project
-+
-+     Licensed under the Apache License, Version 2.0 (the "License");
-+     you may not use this file except in compliance with the License.
-+     You may obtain a copy of the License at
-+
-+          http://www.apache.org/licenses/LICENSE-2.0
-+
-+     Unless required by applicable law or agreed to in writing, software
-+     distributed under the License is distributed on an "AS IS" BASIS,
-+     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-+     See the License for the specific language governing permissions and
-+     limitations under the License.
-+-->
-+
-+<PreferenceScreen
-+    xmlns:android="http://schemas.android.com/apk/res/android"
-+    android:title="@string/recents_settings_title">
-+
-+    <PreferenceCategory
-+        android:key="aosp_recents_panel"
-+        android:title="@string/recents_panel_category" >
-+
-+        <com.android.settings.preference.SystemSettingSwitchPreference
-+            android:key="recents_search_bar"
-+            android:title="@string/recents_searchbar_title"
-+            android:summary="@string/recents_searchbar_summary"
-+            android:defaultValue="true" />
-+
-+        <com.android.settings.preference.SystemSettingSwitchPreference
-+            android:key="systemui_recents_mem_display"
-+            android:title="@string/recents_show_membar_title"
-+            android:summary="@string/recents_show_membar_summary"
-+            android:defaultValue="false" />
-+
-+        <com.android.settings.preference.SystemSettingSwitchPreference
-+            android:key="recents_full_screen"
-+            android:title="@string/recents_full_screen_title"
-+            android:summary="@string/recents_full_screen_summary"
-+            android:defaultValue="false" />
-+
-+        <SwitchPreference
-+            android:key="show_clear_all_recents"
-+            android:title="@string/show_clear_all_recents_button_title"
-+            android:summary="@string/show_clear_all_recents_button_summary"
-+            android:defaultValue="true" />
-+
-+        <com.android.settings.preference.SystemSettingSwitchPreference
-+            android:key="recents_clear_all_dismiss_all"
-+            android:title="@string/recents_clear_all_dismiss_all_title"
-+            android:summary="@string/recents_clear_all_dismiss_all_summary"
++    <SwitchPreference
++            android:key="recent_app_sidebar_open_simultaneously"
++            android:title="@string/recent_app_sidebar_open_simultaneously_title"
++            android:summary="@string/recent_app_sidebar_open_simultaneously_summary"
 +            android:defaultValue="true"
-+            android:dependency="show_clear_all_recents" />
-+
-+        <ListPreference
-+            android:key="recents_clear_all_location"
-+            android:title="@string/recents_clear_all_location_title"
-+            android:entries="@array/recents_clear_all_location_entries"
-+            android:entryValues="@array/recents_clear_all_location_values"
-+            android:defaultValue="3"
-+            android:dependency="show_clear_all_recents" />
-+
-+    </PreferenceCategory>
-+
-+    <PreferenceCategory
-+        android:key="slim_recents_panel"
-+        android:title="@string/slim_recents_panel" >
-+
-+        <SwitchPreference
-+            android:key="use_slim_recents"
-+            android:title="@string/use_slim_recents_title"
-+            android:defaultValue="false" />
-+
-+        <SwitchPreference
-+            android:key="only_show_running_tasks"
-+            android:title="@string/show_running_tasks_title"
-+            android:dependency="use_slim_recents"
-+            android:defaultValue="false" />
-+
-+        <SlimSeekBarPreference
-+            android:key="max_apps"
-+            android:title="@string/recents_max_apps_title" 
-+            android:dependency="use_slim_recents" />
-+
-+       <PreferenceScreen
-+               android:dependency="use_slim_recents"
-+               android:key="recent_app_sidebar_content"
-+               android:fragment="com.android.settings.slim.dslv.ActionListViewSettings"
-+               android:title="@string/recent_app_sidebar_title"
-+               android:summary="@string/recent_app_sidebar_summary">
-+           <extra android:name="actionMode" android:value="7" />
-+           <extra android:name="maxAllowedActions" android:value="-1" />
-+           <extra android:name="useAppPickerOnly" android:value="true" />
-+           <extra android:name="fragment" android:value="com.android.settings.slim.fragments.RecentAppSidebarFragment" />
-+       </PreferenceScreen>
-+
-+        <ListPreference
-+            android:dependency="use_slim_recents"
-+            android:key="recent_panel_expanded_mode"
-+            android:entries="@array/recent_panel_expanded_mode_entries"
-+            android:entryValues="@array/recent_panel_expanded_mode_values"
-+            android:title="@string/recent_panel_expanded_mode_title"
-+            android:summary="@string/recent_panel_expanded_mode_summary"
 +            android:persistent="false" />
-+
-+        <SwitchPreference
-+            android:dependency="use_slim_recents"
-+            android:key="recent_panel_lefty_mode"
-+            android:title="@string/recent_panel_lefty_mode_title"
-+            android:summary="@string/recent_panel_lefty_mode_summary"
-+            android:persistent="false" />
-+
-+        <SwitchPreference
-+            android:dependency="use_slim_recents"
-+            android:key="recent_panel_show_topmost"
-+            android:title="@string/recent_panel_show_topmost_title"
-+            android:summary="@string/recent_panel_show_topmost_summary"
-+            android:persistent="false" />
-+
-+        <SlimSeekBarPreference
-+            android:key="recent_panel_scale"
-+            android:title="@string/recent_panel_scale_title" 
-+            android:dependency="use_slim_recents" />
-+
-+        <net.margaritov.preference.colorpicker.ColorPickerPreference
-+            android:dependency="use_slim_recents"
-+            android:key="recent_panel_bg_color"
-+            android:title="@string/recent_panel_bg_color_title"
-+            android:defaultValue="0x00ffffff"
-+            alphaSlider="true" />
-+
-+        <net.margaritov.preference.colorpicker.ColorPickerPreference
-+            android:dependency="use_slim_recents"
-+            android:key="recent_card_bg_color"
-+            android:title="@string/recent_card_bg_color_title"
-+            android:defaultValue="0x00ffffff"
-+            alphaSlider="true" />
-+
-+        <net.margaritov.preference.colorpicker.ColorPickerPreference
-+            android:dependency="use_slim_recents"
-+            android:key="recent_card_text_color"
-+            android:title="@string/recent_card_text_color_title"
-+            android:defaultValue="0x00ffffff"
-+            alphaSlider="true" />
-+
-+    </PreferenceCategory>
-+
-+    <PreferenceCategory
-+        android:key="other_recents_panel"
-+        android:title="@string/other_recents_category" >
-+
-+        <!-- OmniSwitch -->
-+        <PreferenceScreen
-+            android:key="omniswitch"
-+            android:id="@+id/omniswitch"
-+            android:title="@string/omniswitch_settings_title"
-+            android:fragment="com.android.settings.benzo.OmniSwitch" />
-+	
-+    </PreferenceCategory>
 +
 +</PreferenceScreen>
 diff --git a/res/xml/recents.xml b/res/xml/recents.xml
-index c88112f..70b7f42 100644
+index c88112f..261f329 100644
 --- a/res/xml/recents.xml
 +++ b/res/xml/recents.xml
-@@ -86,6 +86,18 @@
-             android:summary="@string/slim_recents_enable_summary"
-             android:defaultValue="false" />
+@@ -142,4 +142,16 @@
  
-+  <PreferenceScreen
-+               android:dependency="use_slim_recents"
-+               android:key="recent_app_sidebar_content"
-+               android:fragment="com.android.settings.slim.dslv.ActionListViewSettings"
-+               android:title="@string/recent_app_sidebar_title"
-+               android:summary="@string/recent_app_sidebar_summary">
-+           <extra android:name="actionMode" android:value="7" />
-+           <extra android:name="maxAllowedActions" android:value="-1" />
-+           <extra android:name="useAppPickerOnly" android:value="true" />
-+           <extra android:name="fragment" android:value="com.android.settings.slim.fragments.RecentAppSidebarFragment" />
-+       </PreferenceScreen>
+         </PreferenceCategory>
+ 
++    <PreferenceScreen
++            android:dependency="slim_recents"
++            android:key="recent_app_sidebar_content"
++            android:fragment="com.dirtyunicorns.dutweaks.dslv.ActionListViewSettings"
++            android:title="@string/recent_app_sidebar_title"
++            android:summary="@string/recent_app_sidebar_summary">
++        <extra android:name="actionMode" android:value="7" />
++        <extra android:name="maxAllowedActions" android:value="-1" />
++        <extra android:name="useAppPickerOnly" android:value="true" />
++        <extra android:name="fragment" android:value="com.dirtyunicorns.dutweaks.fragments.RecentAppSidebarFragment" />
++    </PreferenceScreen>
 +
-         <SlimSeekBarPreference
-             android:key="max_apps"
-             android:title="@string/recents_max_apps_title"
+ </PreferenceScreen>
 diff --git a/src/com/dirtyunicorns/dutweaks/dslv/ActionListViewSettings.java b/src/com/dirtyunicorns/dutweaks/dslv/ActionListViewSettings.java
 index b0d90e6..a6bc7b6 100644
 --- a/src/com/dirtyunicorns/dutweaks/dslv/ActionListViewSettings.java
@@ -385,10 +251,10 @@ index b0d90e6..a6bc7b6 100644
                              break;
 diff --git a/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebar.java b/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebar.java
 new file mode 100644
-index 0000000..6d45d89
+index 0000000..9368dd7
 --- /dev/null
 +++ b/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebar.java
-@@ -0,0 +1,191 @@
+@@ -0,0 +1,205 @@
 +/*
 + * Copyright (C) 2015 SlimRoms Project
 + *
@@ -405,7 +271,7 @@ index 0000000..6d45d89
 + * limitations under the License.
 + */
 +
-+package com.android.settings.slim;
++package com.dirtyunicorns.dutweaks.fragments;
 +
 +import android.app.AlertDialog;
 +import android.content.DialogInterface;
@@ -420,8 +286,8 @@ index 0000000..6d45d89
 +import com.android.settings.DialogCreatable;
 +import com.android.settings.R;
 +import com.android.settings.SettingsPreferenceFragment;
-+import net.margaritov.preference.colorpicker.ColorPickerPreference;
 +import com.android.internal.logging.MetricsLogger;
++import net.margaritov.preference.colorpicker.ColorPickerPreference;
 +
 +public class RecentAppSidebar extends SettingsPreferenceFragment implements DialogCreatable,
 +        Preference.OnPreferenceChangeListener {
@@ -433,25 +299,28 @@ index 0000000..6d45d89
 +    private static final String APP_SIDEBAR_LABEL_COLOR = "recent_app_sidebar_label_color";
 +    private static final String APP_SIDEBAR_BG_COLOR = "recent_app_sidebar_bg_color";
 +    private static final String APP_SIDEBAR_SCALE = "recent_app_sidebar_scale";
++    private static final String APP_SIDEBAR_OPEN_SIMULTANEOUSLY =
++            "recent_app_sidebar_open_simultaneously";
 +
 +    private SlimSeekBarPreference mAppSidebarScale;
 +    private SwitchPreference mAppSidebarHideLabels;
 +    private ColorPickerPreference mAppSidebarLabelColor;
 +    private ColorPickerPreference mAppSidebarBgColor;
++    private SwitchPreference mAppSidebarOpenSimultaneously;
 +
 +    private static final int MENU_RESET = Menu.FIRST;
 +    private static final int DEFAULT_COLOR = 0x00ffffff;
-+
-+    @Override
-+    protected int getMetricsCategory() {
-+        return MetricsLogger.APPLICATION;
-+    }
 +
 +    @Override
 +    public void onCreate(Bundle savedInstanceState) {
 +        super.onCreate(savedInstanceState);
 +        addPreferencesFromResource(R.xml.recent_app_sidebar_settings);
 +        initializeAllPreferences();
++    }
++
++    @Override
++    protected int getMetricsCategory() {
++        return MetricsLogger.DIRTYTWEAKS;
 +    }
 +
 +    public boolean onPreferenceChange(Preference preference, Object newValue) {
@@ -461,7 +330,8 @@ index 0000000..6d45d89
 +                    Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR, value);
 +            return true;
 +        } else if (preference == mAppSidebarHideLabels) {
-+            Settings.System.putInt(getContentResolver(), Settings.System.RECENT_APP_SIDEBAR_DISABLE_LABELS,
++            Settings.System.putInt(getContentResolver(),
++                    Settings.System.RECENT_APP_SIDEBAR_DISABLE_LABELS,
 +                    ((Boolean) newValue) ? 1 : 0);
 +            return true;
 +        } else if (preference == mAppSidebarLabelColor) {
@@ -490,6 +360,11 @@ index 0000000..6d45d89
 +                    Settings.System.RECENT_APP_SIDEBAR_BG_COLOR,
 +                    intHex);
 +            return true;
++        } else if (preference == mAppSidebarOpenSimultaneously) {
++            Settings.System.putInt(getContentResolver(),
++                    Settings.System.RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY,
++                    ((Boolean) newValue) ? 1 : 0);
++            return true;
 +        }
 +        return false;
 +    }
@@ -497,7 +372,7 @@ index 0000000..6d45d89
 +    @Override
 +    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 +        menu.add(0, MENU_RESET, 0, R.string.reset)
-+                .setIcon(R.drawable.ic_settings_reset)
++                .setIcon(com.android.internal.R.drawable.ic_menu_refresh)
 +                .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 +    }
 +
@@ -545,11 +420,16 @@ index 0000000..6d45d89
 +        mAppSidebarScale.setInitValue(Settings.System.getInt(getContentResolver(),
 +                Settings.System.RECENT_APP_SIDEBAR_SCALE_FACTOR, 100) - 60);
 +
-+        mAppSidebarHideLabels =  (SwitchPreference) findPreference(APP_SIDEBAR_HIDE_LABELS);
++        mAppSidebarHideLabels = (SwitchPreference) findPreference(APP_SIDEBAR_HIDE_LABELS);
 +        mAppSidebarHideLabels.setOnPreferenceChangeListener(this);
 +        mAppSidebarHideLabels.setChecked(Settings.System.getInt(getContentResolver(),
 +                Settings.System.RECENT_APP_SIDEBAR_DISABLE_LABELS, 0) == 1);
 +
++        mAppSidebarOpenSimultaneously =
++                (SwitchPreference) findPreference(APP_SIDEBAR_OPEN_SIMULTANEOUSLY);
++        mAppSidebarOpenSimultaneously.setOnPreferenceChangeListener(this);
++        mAppSidebarOpenSimultaneously.setChecked(Settings.System.getInt(getContentResolver(),
++                Settings.System.RECENT_APP_SIDEBAR_OPEN_SIMULTANEOUSLY, 1) == 1);
 +
 +        mAppSidebarLabelColor = (ColorPickerPreference) findPreference(APP_SIDEBAR_LABEL_COLOR);
 +        mAppSidebarLabelColor.setOnPreferenceChangeListener(this);
@@ -582,10 +462,10 @@ index 0000000..6d45d89
 +}
 diff --git a/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebarFragment.java b/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebarFragment.java
 new file mode 100644
-index 0000000..e737bd2
+index 0000000..fac1f3f
 --- /dev/null
 +++ b/src/com/dirtyunicorns/dutweaks/fragments/RecentAppSidebarFragment.java
-@@ -0,0 +1,56 @@
+@@ -0,0 +1,83 @@
 +/*
 + * Copyright (C) 2013-2015 Slimroms
 + *
@@ -602,30 +482,40 @@ index 0000000..e737bd2
 + * limitations under the License.
 + */
 +
-+package com.android.settings.slim.fragments;
++package com.dirtyunicorns.dutweaks.fragments;
 +
 +import android.os.Bundle;
++import android.preference.Preference;
++import android.preference.SwitchPreference;
++import android.provider.Settings;
 +import android.view.LayoutInflater;
 +import android.view.View;
 +import android.view.ViewGroup;
 +import android.widget.ListView;
 +
-+import com.android.internal.logging.MetricsLogger;
 +import com.android.settings.R;
 +import com.android.settings.SettingsPreferenceFragment;
++import com.android.internal.logging.MetricsLogger;
 +
-+public class RecentAppSidebarFragment extends SettingsPreferenceFragment {
++public class RecentAppSidebarFragment extends SettingsPreferenceFragment implements
++        Preference.OnPreferenceChangeListener {
 +
-+    @Override
-+    protected int getMetricsCategory() {
-+        return MetricsLogger.APPLICATION;
-+    }
++    // Preferences
++    private static final String USE_RECENT_APP_SIDEBAR = "use_recent_app_sidebar";
++
++    private SwitchPreference mUseSidebar;
 +
 +    @Override
 +    public void onCreate(Bundle savedInstanceState) {
 +        super.onCreate(savedInstanceState);
 +
 +        addPreferencesFromResource(R.xml.recent_app_sidebar_fragment);
++        initializeAllPreferences();
++    }
++
++    @Override
++    protected int getMetricsCategory() {
++        return MetricsLogger.DIRTYTWEAKS;
 +    }
 +
 +    @Override
@@ -641,7 +531,24 @@ index 0000000..e737bd2
 +        }
 +        return view;
 +    }
++
++    public boolean onPreferenceChange(Preference preference, Object newValue) {
++        if (preference == mUseSidebar) {
++            Settings.System.putInt(getContentResolver(),
++                    Settings.System.USE_RECENT_APP_SIDEBAR,
++                    ((Boolean) newValue) ? 1 : 0);
++            return true;
++        }
++        return false;
++    }
++
++    private void initializeAllPreferences() {
++        mUseSidebar = (SwitchPreference) findPreference(USE_RECENT_APP_SIDEBAR);
++        mUseSidebar.setOnPreferenceChangeListener(this);
++        mUseSidebar.setChecked(Settings.System.getInt(getContentResolver(),
++                Settings.System.USE_RECENT_APP_SIDEBAR, 1) == 1);
++    }
 +}
 -- 
-1.9.1
+2.5.0
 
