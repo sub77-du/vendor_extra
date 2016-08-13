@@ -1,11 +1,12 @@
 build_root=$(pwd) # vendorsetup.sh is sourced by build/envsetup.sh in root of android build tree. Hope that nobody can correctly source it not from root of android tree.
 
-. $ANDROID_BUILD_TOP/vendor/extra/tools/colors
+. $ANDROID_BUILD_TOP/build/colors
 
 echo Touching prebuilts/qemu-kernel/arm/LINUX_KERNEL_COPYING
 mkdir -p prebuilts/qemu-kernel/arm/
 touch prebuilts/qemu-kernel/arm/LINUX_KERNEL_COPYING
 echo -e ${CL_RED}"Applying patches"${CL_RST}
+echo -e ${CL_RST}"----------------"${CL_RST}
 patches_path="$build_root/vendor/extra/patch/"
 pushd "$patches_path" > /dev/null
 unset repos
@@ -16,7 +17,7 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
 	# Supported both path/to/repo_with_underlines/file.patch and path_to_repo+with+underlines/file.patch (both leads to path/to/repo_with_underlines)
 	repo_to_patch="$(if dirname $patch|grep -q /; then dirname $patch; else dirname $patch |tr '_' '/'|tr '+' '_'; fi)"
 
-	echo -n "Is $repo_to_patch patched for '$title' ?.. "
+	echo -e ${CL_BLU}" --> Is $repo_to_patch patched for '$title' ?.. "${CL_RST}
 
         if [ ! -d $build_root/$repo_to_patch ] ; then
                 echo "$repo_to_patch NOT EXIST! Go away and check your manifests. Skipping this patch."
@@ -31,7 +32,7 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
 		  commit_id=$(git format-patch -1 --stdout $commit_hash |git patch-id|cut -d ' ' -f 1)
 		  patch_id=$(git patch-id < $absolute_patch_path|cut -d ' ' -f 1)
 		  if [ "$commit_id" = "$patch_id" ]; then
-			  echo ', patch matches'
+			  echo -e ${CL_GRN} ', patch matches'${CL_RST}
 		  else
 		  echo -e ${CL_RED}"PATCH MISMATCH!: done"${CL_RST}
 			  #echo ', PATCH MISMATCH!'
@@ -63,4 +64,5 @@ for patch in `find -type f -name '*.patch'|cut -d / -f 2-|sort`; do
 	popd > /dev/null
 done
 popd > /dev/null
+echo -e ${CL_RST}"----------------"${CL_RST}
 echo -e ${CL_GRN}"Applying patches: done"${CL_RST}
