@@ -55,6 +55,8 @@ PRODUCT_PACKAGES += \
     nano
     
 # Gello
+WITH_GELLO_SOURCE := true
+
 PRODUCT_PACKAGES += \
     Gello
 

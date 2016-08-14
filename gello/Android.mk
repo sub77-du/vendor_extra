@@ -25,12 +25,7 @@ LOCAL_CERTIFICATE := $(DEFAULT_SYSTEM_DEV_CERTIFICATE)
 
 LOCAL_OVERRIDES_PACKAGES := Browser
 
-WITH_GELLO_SOURCE := true
-
 ifeq ($(WITH_GELLO_SOURCE),true)
-BUILD_GELLO := $(info $(shell bash ./install-build-deps-android.sh 1>&2))
-BUILD_GELLO := $(info $(shell bash $(SOURCE_GELLO_PATH)/gello_build.sh --depot 1>&2))
-
 # Build from source
 ifeq ($(LOCAL_GELLO),true)
 BUILD_GELLO := $(info $(shell bash $(SOURCE_GELLO_PATH)/gello_build.sh --local 1>&2))
@@ -48,9 +43,9 @@ LOCAL_MODULE_SUFFIX := $(COMMON_ANDROID_PACKAGE_SUFFIX)
 
 LOCAL_MAVEN_REPO := https://maven.cyanogenmod.org/artifactory/gello_prebuilds
 LOCAL_MAVEN_GROUP := org.cyanogenmod
-LOCAL_MAVEN_VERSION := 20
+LOCAL_MAVEN_VERSION := 29
 LOCAL_MAVEN_ARTIFACT := gello
 LOCAL_MAVEN_PACKAGING := apk
-LOCAL_CERTIFICATE := PRESIGNED
+
 include $(BUILD_MAVEN_PREBUILT)
 endif
