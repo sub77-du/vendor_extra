@@ -1,6 +1,18 @@
 build_root=$(pwd) # vendorsetup.sh is sourced by build/envsetup.sh in root of android build tree. Hope that nobody can correctly source it not from root of android tree.
 
-. $ANDROID_BUILD_TOP/build/colors
+. build/colors
+
+# Start packages/apps/Settings
+echo -e ${CL_BLU}"PULLING packages/apps/Settings"${CL_RST}
+cd $build_root/packages/apps/Settings
+git pull https://github.com/sub77-du/android_packages_apps_Settings.git
+cd $build_root # End packages/apps/Settings
+
+# Start packages/apps/DU-Tweaks
+echo -e ${CL_BLU}"PULLING packages/apps/DU-Tweaks"${CL_RST}
+cd $build_root/packages/apps/DU-Tweaks
+git pull https://github.com/sub77-du/android_packages_apps_DU-Tweaks.git
+cd $build_root # End packages/apps/DU-Tweaks
 
 echo Touching prebuilts/qemu-kernel/arm/LINUX_KERNEL_COPYING
 mkdir -p prebuilts/qemu-kernel/arm/
