@@ -14,9 +14,17 @@ cd $build_root/packages/apps/DU-Tweaks
 git pull https://github.com/sub77-du/android_packages_apps_DU-Tweaks.git
 cd $build_root # End packages/apps/DU-Tweaks
 
+# Start frameworks_base
+echo -e ${CL_BLU}"PULLING frameworks_base"${CL_RST}
+cd $build_root/frameworks_base
+git pull https://github.com/sub77-du/android_frameworks_base.git
+cd $build_root # End frameworks_base
+
 echo Touching prebuilts/qemu-kernel/arm/LINUX_KERNEL_COPYING
 mkdir -p prebuilts/qemu-kernel/arm/
 touch prebuilts/qemu-kernel/arm/LINUX_KERNEL_COPYING
+
+echo -e ""
 echo -e ${CL_RED}"Applying patches"${CL_RST}
 echo -e ${CL_RST}"----------------"${CL_RST}
 patches_path="$build_root/vendor/extra/patch/"

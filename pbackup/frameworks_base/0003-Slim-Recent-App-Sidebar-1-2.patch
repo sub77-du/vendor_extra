@@ -1,7 +1,7 @@
-From 61476d7584407ed104264936c3fc2fb41b224a56 Mon Sep 17 00:00:00 2001
+From 449fec8886060a497b0b8c7a6b1572ae136becd3 Mon Sep 17 00:00:00 2001
 From: sub77 <sub77@ymail.com>
-Date: Sat, 13 Aug 2016 00:53:47 +0000
-Subject: [PATCH 2/2] Slim Recent App Sidebar [1/2]
+Date: Tue, 21 Jun 2016 16:04:54 -0500
+Subject: [PATCH 3/3] Slim Recent App Sidebar [1/2]
 
 One thing I was missing with SlimRecents was the possibility to launch your favorite apps
 from the recents screen. As SlimRecents covers only the half of the screen (more or less),
@@ -37,14 +37,14 @@ PS3: Some lines were to long
  packages/SystemUI/res/values/du_dimens.xml         |   5 +
  packages/SystemUI/res/values/du_strings.xml        |   3 +
  .../android/systemui/slimrecent/AppSidebar.java    | 506 +++++++++++++++++++++
- .../systemui/slimrecent/RecentController.java      | 122 ++++-
+ .../systemui/slimrecent/RecentController.java      | 127 +++++-
  .../systemui/slimrecent/RecentPanelView.java       |   2 +
- 8 files changed, 720 insertions(+), 11 deletions(-)
+ 8 files changed, 725 insertions(+), 11 deletions(-)
  create mode 100644 packages/SystemUI/res/layout/recent_app_sidebar.xml
  create mode 100644 packages/SystemUI/src/com/android/systemui/slimrecent/AppSidebar.java
 
 diff --git a/core/java/android/provider/Settings.java b/core/java/android/provider/Settings.java
-index 67b7c6d..07bd583 100644
+index 362011a..f71bc15 100644
 --- a/core/java/android/provider/Settings.java
 +++ b/core/java/android/provider/Settings.java
 @@ -4705,6 +4705,58 @@ public final class Settings {
@@ -704,7 +704,7 @@ index 0000000..0740eae
 +    }
 +}
 diff --git a/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java b/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java
-index 0cd833d..543aa8f 100644
+index 0cd833d..d2473a6 100644
 --- a/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java
 +++ b/packages/SystemUI/src/com/android/systemui/slimrecent/RecentController.java
 @@ -108,12 +108,19 @@ public class RecentController implements RecentPanelView.OnExitListener,
@@ -792,7 +792,20 @@ index 0cd833d..543aa8f 100644
          return params;
      }
  
-@@ -465,6 +486,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
+@@ -444,6 +465,12 @@ public class RecentController implements RecentPanelView.OnExitListener,
+                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+             break;
+         }
++
++        mParentView.setSystemUiVisibility(newVis);
++        mVisibility = newVis;
++        if (mAppSidebar != null){
++            mAppSidebar.setSystemUiVisibility(newVis);
++        }
+     }
+ 
+     // Returns if panel is currently showing.
+@@ -465,6 +492,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
                  mAnimationState = ANIMATION_STATE_NONE;
                  mHandler.removeCallbacks(mRecentRunnable);
                  mWindowManager.removeViewImmediate(mParentView);
@@ -800,7 +813,7 @@ index 0cd833d..543aa8f 100644
                  return true;
              } else if (mAnimationState != ANIMATION_STATE_OUT) {
                  if (DEBUG) Log.d(TAG, "out animation starting");
-@@ -473,6 +495,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
+@@ -473,6 +501,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
                  mHandler.postDelayed(mRecentRunnable, mContext.getResources().getInteger(
                          com.android.internal.R.integer.config_recentDefaultDur));
                  mWindowManager.removeView(mParentView);
@@ -808,7 +821,7 @@ index 0cd833d..543aa8f 100644
                  return true;
              }
          }
-@@ -488,6 +511,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
+@@ -488,6 +517,7 @@ public class RecentController implements RecentPanelView.OnExitListener,
          mHandler.removeCallbacks(mRecentRunnable);
          CacheController.getInstance(mContext).setRecentScreenShowing(true);
          mWindowManager.addView(mParentView, generateLayoutParameter());
@@ -816,11 +829,10 @@ index 0cd833d..543aa8f 100644
      }
  
      private static void sendCloseSystemWindows() {
-@@ -563,6 +587,18 @@ public class RecentController implements RecentPanelView.OnExitListener,
+@@ -563,6 +593,17 @@ public class RecentController implements RecentPanelView.OnExitListener,
                      false, this, UserHandle.USER_ALL);
              resolver.registerContentObserver(Settings.System.getUriFor(
                      Settings.System.IMMERSIVE_RECENTS),
-+                                        false, this, UserHandle.USER_ALL);
 +             resolver.registerContentObserver(Settings.System.getUriFor(
 +                    Settings.System.USE_RECENT_APP_SIDEBAR),
 +                    false, this, UserHandle.USER_ALL);
@@ -835,7 +847,7 @@ index 0cd833d..543aa8f 100644
                      false, this, UserHandle.USER_ALL);
              update();
          }
-@@ -627,6 +663,21 @@ public class RecentController implements RecentPanelView.OnExitListener,
+@@ -627,6 +668,21 @@ public class RecentController implements RecentPanelView.OnExitListener,
              mImmersiveRecents = Settings.System.getIntForUser(
                      resolver, Settings.System.IMMERSIVE_RECENTS, 0,
                      UserHandle.USER_CURRENT);
@@ -857,7 +869,7 @@ index 0cd833d..543aa8f 100644
          }
      }
  
-@@ -791,4 +842,53 @@ public class RecentController implements RecentPanelView.OnExitListener,
+@@ -791,4 +847,53 @@ public class RecentController implements RecentPanelView.OnExitListener,
          }
     }
  
