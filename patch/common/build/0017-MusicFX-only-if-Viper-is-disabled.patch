@@ -1,0 +1,25 @@
+From e9596b9e5acf914b17a6d8b0a994f56357ef1131 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 17:16:17 -0500
+Subject: [PATCH 17/23] MusicFX only if Viper is disabled
+
+Change-Id: I3cd5250afefbfc3f8fd9cd8eb8454b621573138f
+---
+ target/product/generic_no_telephony.mk | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/target/product/generic_no_telephony.mk b/target/product/generic_no_telephony.mk
+index 52fe541..d150884 100644
+--- a/target/product/generic_no_telephony.mk
++++ b/target/product/generic_no_telephony.mk
+@@ -22,7 +22,6 @@ PRODUCT_PACKAGES := \
+     BluetoothMidiService \
+     Camera2 \
+     Gallery2 \
+-    MusicFX \
+     OneTimeInitializer \
+     Provision \
+     SystemUI \
+-- 
+2.7.4
+

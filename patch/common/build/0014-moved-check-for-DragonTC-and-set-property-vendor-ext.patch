@@ -1,0 +1,43 @@
+From a777040cf55ede9ef1ea30bbc3340d9e1e9752e8 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 12:00:44 -0500
+Subject: [PATCH 14/23] moved check for DragonTC and set property ->
+ vendor/extra
+
+Change-Id: I033a44fb14c319bba23dabe1edf2ad98fb756196
+---
+ core/clang/config.mk | 17 ++++-------------
+ 1 file changed, 4 insertions(+), 13 deletions(-)
+
+diff --git a/core/clang/config.mk b/core/clang/config.mk
+index 25ad724..8c7ac49 100644
+--- a/core/clang/config.mk
++++ b/core/clang/config.mk
+@@ -9,20 +9,11 @@ endif
+ 
+ 
+ # Set LLVM version for DragonTC
+-ifndef FALLBACK_CLANG
+-	ifndef TARGET_CLANG_VERSION_EXP
+-		TARGET_DRAGONTC_VERSION :=
+-	endif
+-else
+-ifeq (1,$(words $(filter 3.9,$(FALLBACK_CLANG))))
+-	TARGET_DRAGONTC_VERSION := $(FALLBACK_CLANG)
+-else ifeq (1,$(words $(filter 3.9,$(TARGET_CLANG_VERSION_EXP))))
++
++ifdef TARGET_CLANG_VERSION_EXP
+ 	TARGET_DRAGONTC_VERSION := $(TARGET_CLANG_VERSION_EXP)
+-endif
+-	DTC_PATH := prebuilts/clang/linux-x86/host/$(TARGET_DRAGONTC_VERSION)
+-	DTC_VER := $(shell cat $(DTC_PATH)/VERSION)
+-	export $(DTC_VER)
+-	PRODUCT_PROPERTY_OVERRIDES += ro.dtc.version=$(DTC_VER)
++else
++	TARGET_DRAGONTC_VERSION :=
+ endif
+ 
+ ifeq ($(TARGET_DRAGONTC_VERSION),)
+-- 
+2.7.4
+

@@ -1,0 +1,29 @@
+From a2cfb1d13a417706f8ac8532970f64f2db9c0b1f Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 4 Jun 2016 00:12:48 -0500
+Subject: [PATCH 1/2] matisse: change audiosource
+
+---
+ src/com/android/camera/VideoModule.java | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/com/android/camera/VideoModule.java b/src/com/android/camera/VideoModule.java
+index ff3e787..d4870dd 100644
+--- a/src/com/android/camera/VideoModule.java
++++ b/src/com/android/camera/VideoModule.java
+@@ -1613,10 +1613,10 @@ public class VideoModule implements CameraModule,
+             mMediaRecorder.setVideoEncoder(mProfile.videoCodec);
+         } else if (isHSR) {
+             mProfile.videoBitRate *= captureRate / 30;
+-            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
++            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+             mMediaRecorder.setProfile(mProfile);
+         } else {
+-            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.CAMCORDER);
++            mMediaRecorder.setAudioSource(MediaRecorder.AudioSource.DEFAULT);
+             mMediaRecorder.setProfile(mProfile);
+         }
+ 
+-- 
+2.7.4
+

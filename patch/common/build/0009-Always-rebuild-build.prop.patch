@@ -1,0 +1,28 @@
+From 9b458e88e75d632bc82749967e845b06361dbaf8 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 10 Jun 2016 07:44:29 -0500
+Subject: [PATCH 09/23] Always rebuild build.prop
+
+Or your build version isn't updating properly...
+
+Change-Id: Ib2f0717442d2de64320c0cc52214a9a3df509980
+Signed-off-by: Corey Edwards <ensabahnur16@gmail.com>
+---
+ core/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/core/Makefile b/core/Makefile
+index 1921147..62bba25 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -204,6 +204,7 @@ system_prop_file := $(TARGET_SYSTEM_PROP)
+ else
+ system_prop_file := $(wildcard $(TARGET_DEVICE_DIR)/system.prop)
+ endif
+++.PHONY: $(intermediate_system_build_prop)
+ $(intermediate_system_build_prop): $(BUILDINFO_SH) $(INTERNAL_BUILD_ID_MAKEFILE) $(BUILD_SYSTEM)/version_defaults.mk $(system_prop_file) $(INSTALLED_ANDROID_INFO_TXT_TARGET)
+ 	@echo Target buildinfo: $@
+ 	@mkdir -p $(dir $@)
+-- 
+2.7.4
+

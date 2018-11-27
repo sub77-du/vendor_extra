@@ -1,0 +1,22 @@
+From 9406d1e70e5dcc9d2eb6c5d84729bdf51eb48e30 Mon Sep 17 00:00:00 2001
+From: mydongistiny <jaysonedson@gmail.com>
+Date: Fri, 25 Dec 2015 12:22:47 -0800
+Subject: [PATCH 2/2] Hack to get GCC 5.3 to work with NDK.
+
+Signed-off-by: Corey Edwards <ensabahnur16@gmail.com>
+---
+ 9/sources/cxx-stl/gnu-libstdc++/5.3 | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 9/sources/cxx-stl/gnu-libstdc++/5.3
+
+diff --git a/9/sources/cxx-stl/gnu-libstdc++/5.3 b/9/sources/cxx-stl/gnu-libstdc++/5.3
+new file mode 120000
+index 0000000..899dd4f
+--- /dev/null
++++ b/9/sources/cxx-stl/gnu-libstdc++/5.3
+@@ -0,0 +1 @@
++4.9
+\ No newline at end of file
+-- 
+1.9.1
+

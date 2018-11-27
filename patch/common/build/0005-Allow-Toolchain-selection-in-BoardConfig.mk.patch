@@ -1,0 +1,94 @@
+From aa94fd27ca389158c6f9edb7eed1a84e7b32fc8e Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Tue, 24 May 2016 22:10:27 -0500
+Subject: [PATCH 05/23] Allow Toolchain selection in BoardConfig.mk
+
+KERNEL_TOOLCHAIN := /home/sub77/roms/du/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-$TARGET_KERNEL_VERSION_EXP/bin
+TARGET_KERNEL_CROSS_COMPILE_PREFIX := arm-linux-androideabi-
+
+TARGET_NDK_VERSION_EXP := 5.3-uber
+TARGET_GCC_VERSION_EXP := 5.3-uber
+TARGET_KERNEL_VERSION_EXP := 4.9-uber
+TARGET_CLANG_VERSION_EXP := 3.9-opt
+
+Change-Id: Ia30a45421f54648b7d2cf87e13f3d5b73583bb58
+---
+ core/clang/config.mk           | 4 ++++
+ core/combo/TARGET_linux-arm.mk | 4 ++++
+ core/dragontc.mk               | 3 ++-
+ core/dumpvar.mk                | 9 +++++++++
+ 4 files changed, 19 insertions(+), 1 deletion(-)
+
+diff --git a/core/clang/config.mk b/core/clang/config.mk
+index cac366a..36f3a91 100644
+--- a/core/clang/config.mk
++++ b/core/clang/config.mk
+@@ -7,7 +7,11 @@ WITHOUT_HOST_CLANG := true
+ endif
+ 
+ # Set LLVM version for DragonTC
++ifeq ($(TARGET_CLANG_VERSION_EXP),)
+ TARGET_DRAGONTC_VERSION := 3.9
++else
++TARGET_DRAGONTC_VERSION := $(TARGET_CLANG_VERSION_EXP)
++endif
+ 
+ ifeq ($(TARGET_DRAGONTC_VERSION),)
+ LLVM_PREBUILTS_VERSION := 3.6
+diff --git a/core/combo/TARGET_linux-arm.mk b/core/combo/TARGET_linux-arm.mk
+index 5020865..0ebc7a5 100644
+--- a/core/combo/TARGET_linux-arm.mk
++++ b/core/combo/TARGET_linux-arm.mk
+@@ -35,7 +35,11 @@ TARGET_$(combo_2nd_arch_prefix)ARCH_VARIANT := armv5te
+ endif
+ 
+ # Decouple NDK library selection with platform compiler version
++ifeq ($(TARGET_NDK_VERSION_EXP),)
+ $(combo_2nd_arch_prefix)TARGET_NDK_GCC_VERSION := 4.9
++else
++$(combo_2nd_arch_prefix)TARGET_NDK_GCC_VERSION := $(TARGET_NDK_VERSION_EXP)
++endif
+ 
+ ifeq ($(strip $(TARGET_GCC_VERSION_EXP)),)
+ $(combo_2nd_arch_prefix)TARGET_GCC_VERSION := 4.9
+diff --git a/core/dragontc.mk b/core/dragontc.mk
+index 9d08b7e..e3db7b8 100644
+--- a/core/dragontc.mk
++++ b/core/dragontc.mk
+@@ -107,7 +107,8 @@ DISABLE_POLLY_arm := \
+   libxml2 \
+   libc_freebsd \
+   libc_tzcode \
+-  libv8
++  libF77blasV8 \
++  libRSSupport
+ DISABLE_POLLY_arm64 := \
+   libpng \
+   libfuse \
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index 133ec7d..2092a31 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -72,6 +72,14 @@ $(info   TARGET_BUILD_TYPE=$(TARGET_BUILD_TYPE))
+ $(info   TARGET_ARCH=$(TARGET_ARCH))
+ $(info   TARGET_GCC_VERSION=$(TARGET_GCC_VERSION))
+ $(info   TARGET_NDK_GCC_VERSION=$(TARGET_NDK_GCC_VERSION))
++ ifeq ($(TARGET_CLANG_VERSION_EXP),)
++ else
++  $(info   TARGET_CLANG_VERSION=$(TARGET_CLANG_VERSION_EXP))
++ endif
++  ifeq ($(TARGET_KERNEL_VERSION_EXP),)
++ else
++  $(info   TARGET_KERNEL_GCC_VERSION=$(TARGET_KERNEL_VERSION_EXP))
++ endif
+ $(info   TARGET_ARCH_VARIANT=$(TARGET_ARCH_VARIANT))
+ $(info   TARGET_CPU_VARIANT=$(TARGET_CPU_VARIANT))
+ $(info   HOST_ARCH=$(HOST_ARCH))
+@@ -82,3 +90,4 @@ $(info   BUILD_ID=$(BUILD_ID))
+ $(info   OUT_DIR=$(OUT_DIR))
+ $(info ============================================)
+ endif
++
+-- 
+2.7.4
+

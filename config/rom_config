@@ -1,0 +1,4 @@
+ccache_use=1
+ccache_dir=/roms/ccache/du6
+ccache_size=20
+

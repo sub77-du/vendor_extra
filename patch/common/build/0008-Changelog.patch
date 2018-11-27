@@ -1,0 +1,28 @@
+From 5e50066b02824afdabb0680da6bf72e693f65837 Mon Sep 17 00:00:00 2001
+From: martinusbe <martinusbe@gmail.com>
+Date: Sun, 7 Jun 2015 08:43:45 +0200
+Subject: [PATCH 08/23] Changelog
+
+Change-Id: I024a010544c6a5ec034aa5175f8e7a29ebfe1e2b
+Signed-off-by: martinusbe <martinusbe@gmail.com>
+Signed-off-by: Corey Edwards <ensabahnur16@gmail.com>
+Signed-off-by: sub77 <sub77@ymail.com>
+---
+ core/Makefile | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/core/Makefile b/core/Makefile
+index c044580..1921147 100644
+--- a/core/Makefile
++++ b/core/Makefile
+@@ -1124,6 +1124,7 @@ FULL_SYSTEMIMAGE_DEPS := $(INTERNAL_SYSTEMIMAGE_FILES) $(INTERNAL_USERIMAGES_DEP
+ # system image.
+ INSTALLED_FILES_FILE := $(PRODUCT_OUT)/installed-files.txt
+ $(INSTALLED_FILES_FILE): $(FULL_SYSTEMIMAGE_DEPS)
++	$(hide) ./vendor/extra/tools/changelog
+ 	@echo Installed file list: $@
+ 	@mkdir -p $(dir $@)
+ 	@rm -f $@
+-- 
+2.7.4
+

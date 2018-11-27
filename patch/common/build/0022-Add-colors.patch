@@ -1,0 +1,31 @@
+From 42b98733b910eee156a297b8328c7f2616013487 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sat, 13 Aug 2016 04:34:10 +0000
+Subject: [PATCH 22/23] Add colors
+
+Change-Id: I5a196fbeccbbad3237c37fbb6278444ddd01f7d8
+---
+ colors | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+ create mode 100644 colors
+
+diff --git a/colors b/colors
+new file mode 100644
+index 0000000..6bfa58f
+--- /dev/null
++++ b/colors
+@@ -0,0 +1,11 @@
++#!/bin/bash
++
++if [ ! "$BUILD_WITH_COLORS" = "0" ]; then
++    CL_RED="\033[31m"
++    CL_GRN="\033[32m"
++    CL_YLW="\033[33m"
++    CL_BLU="\033[34m"
++    CL_MAG="\033[35m"
++    CL_CYN="\033[36m"
++    CL_RST="\033[0m"
++fi
+-- 
+2.7.4
+

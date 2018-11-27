@@ -1,0 +1,121 @@
+From 84eae393c658ff90ed047d4f13098876f0ab7f27 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Fri, 10 Jun 2016 15:15:09 -0500
+Subject: [PATCH 12/23] Check for Toolchains and set property
+
+Change-Id: Ib46744d70433bb08dcb3a24d02ece30d8acdc5be
+---
+ core/clang/config.mk           |  2 ++
+ core/combo/TARGET_linux-arm.mk | 20 ++++++++++++--------
+ core/config.mk                 |  1 +
+ core/dumpvar.mk                | 30 +++++++++++++++++++++++-------
+ 4 files changed, 38 insertions(+), 15 deletions(-)
+
+diff --git a/core/clang/config.mk b/core/clang/config.mk
+index 9d8bec1..25ad724 100644
+--- a/core/clang/config.mk
++++ b/core/clang/config.mk
+@@ -6,6 +6,8 @@ WITHOUT_TARGET_CLANG := true
+ WITHOUT_HOST_CLANG := true
+ endif
+ 
++
++
+ # Set LLVM version for DragonTC
+ ifndef FALLBACK_CLANG
+ 	ifndef TARGET_CLANG_VERSION_EXP
+diff --git a/core/combo/TARGET_linux-arm.mk b/core/combo/TARGET_linux-arm.mk
+index 0ebc7a5..9aa7944 100644
+--- a/core/combo/TARGET_linux-arm.mk
++++ b/core/combo/TARGET_linux-arm.mk
+@@ -35,17 +35,21 @@ TARGET_$(combo_2nd_arch_prefix)ARCH_VARIANT := armv5te
+ endif
+ 
+ # Decouple NDK library selection with platform compiler version
+-ifeq ($(TARGET_NDK_VERSION_EXP),)
+-$(combo_2nd_arch_prefix)TARGET_NDK_GCC_VERSION := 4.9
+-else
+-$(combo_2nd_arch_prefix)TARGET_NDK_GCC_VERSION := $(TARGET_NDK_VERSION_EXP)
++$(combo_2nd_arch_prefix)TARGET_NDK_VERSION := $(TARGET_NDK_VERSION_EXP)
++ifndef TARGET_NDK_VERSION
++	$(combo_2nd_arch_prefix)TARGET_NDK_VERSION := $(FALLBACK_NDK)
++	ifndef FALLBACK_NDK
++	$(combo_2nd_arch_prefix)TARGET_NDK_VERSION := 4.9
++	endif
+ endif
+ 
+-ifeq ($(strip $(TARGET_GCC_VERSION_EXP)),)
+-$(combo_2nd_arch_prefix)TARGET_GCC_VERSION := 4.9
+-$(combo_2nd_arch_prefix)TARGET_LEGACY_GCC_VERSION := 4.8
+-else
+ $(combo_2nd_arch_prefix)TARGET_GCC_VERSION := $(TARGET_GCC_VERSION_EXP)
++ifndef TARGET_GCC_VERSION
++	$(combo_2nd_arch_prefix)TARGET_GCC_VERSION := $(FALLBACK_GCC)
++	ifndef FALLBACK_GCC
++	$(combo_2nd_arch_prefix)TARGET_GCC_VERSION := 4.9
++	$(combo_2nd_arch_prefix)TARGET_LEGACY_GCC_VERSION := 4.8
++	endif
+ endif
+ 
+ TARGET_ARCH_SPECIFIC_MAKEFILE := $(BUILD_COMBOS)/arch/$(TARGET_$(combo_2nd_arch_prefix)ARCH)/$(TARGET_$(combo_2nd_arch_prefix)ARCH_VARIANT).mk
+diff --git a/core/config.mk b/core/config.mk
+index e2849ad..0758175 100644
+--- a/core/config.mk
++++ b/core/config.mk
+@@ -230,6 +230,7 @@ ifeq ($(TARGET_CPU_ABI),)
+   $(error No TARGET_CPU_ABI defined by board config: $(board_config_mk))
+ endif
+ TARGET_CPU_ABI2 := $(strip $(TARGET_CPU_ABI2))
++include vendor/extra/config/uber.mk
+ 
+ # $(1): os/arch
+ define select-android-config-h
+diff --git a/core/dumpvar.mk b/core/dumpvar.mk
+index 3e057c7..5a8c4c8 100644
+--- a/core/dumpvar.mk
++++ b/core/dumpvar.mk
+@@ -70,18 +70,34 @@ $(info   TARGET_PRODUCT=$(TARGET_PRODUCT))
+ $(info   TARGET_BUILD_VARIANT=$(TARGET_BUILD_VARIANT))
+ $(info   TARGET_BUILD_TYPE=$(TARGET_BUILD_TYPE))
+ $(info   TARGET_ARCH=$(TARGET_ARCH))
+-$(info   TARGET_GCC_VERSION=$(TARGET_GCC_VERSION))
+-$(info   TARGET_NDK_GCC_VERSION=$(TARGET_NDK_GCC_VERSION))
+-  ifeq ($(TARGET_KERNEL_VERSION_EXP),)
+- else
+-  $(info   TARGET_KERNEL_GCC_VERSION=$(TARGET_KERNEL_VERSION_EXP))
+- endif
+ $(info   TARGET_ARCH_VARIANT=$(TARGET_ARCH_VARIANT))
+ $(info   TARGET_CPU_VARIANT=$(TARGET_CPU_VARIANT))
++
++# GCCTC info
++ifdef ARM_GCC_PROP
++ $(info   TARGET_GCC_VERSION=$(ARM_GCC_PROP))
++  else
++ $(info   TARGET_GCC_VERSION=$(TARGET_GCC_VERSION))
++endif
++
++# NDKTC info
++ifdef ARM_NDK_PROP
++ $(info   TARGET_NDK_VERSION=$(ARM_NDK_PROP))
++  else
++ $(info   TARGET_NDK_VERSION=$(TARGET_NDK_VERSION))
++endif
++
++# KernelTC info
++ifdef ARM_KERNEL_PROP
++ $(info   TARGET_KERNEL_VERSION=$(ARM_KERNEL_PROP))
++  else
++ $(info   TARGET_KERNEL_VERSION=$(TARGET_KERNEL_VERSION))
++endif
++
+ # DragonTC info
+ ifeq ($(TARGET_DRAGONTC_VERSION),)
+ else
+-$(info   CLANG_VERSION=$(DTC_VER))
++$(info   TARGET_CLANG_VERSION=$(DTC_VER))
+ endif
+ $(info   HOST_ARCH=$(HOST_ARCH))
+ $(info   HOST_OS=$(HOST_OS))
+-- 
+2.7.4
+

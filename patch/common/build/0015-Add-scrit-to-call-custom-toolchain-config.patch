@@ -1,0 +1,28 @@
+From bede5fa37ceeafd46c5b00909a7b3273b1a0c8c3 Mon Sep 17 00:00:00 2001
+From: sub77 <sub77@ymail.com>
+Date: Sun, 12 Jun 2016 12:01:21 -0500
+Subject: [PATCH 15/23] Add scrit to call custom toolchain config
+
+Change-Id: I9c048063eded29c20fde70be1000f566517a0b29
+---
+ core/config.mk | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/core/config.mk b/core/config.mk
+index 0758175..eacf639 100644
+--- a/core/config.mk
++++ b/core/config.mk
+@@ -230,7 +230,9 @@ ifeq ($(TARGET_CPU_ABI),)
+   $(error No TARGET_CPU_ABI defined by board config: $(board_config_mk))
+ endif
+ TARGET_CPU_ABI2 := $(strip $(TARGET_CPU_ABI2))
+-include vendor/extra/config/uber.mk
++
++# Add custom toolchain configuration
++include vendor/extra/config/toolchains.mk
+ 
+ # $(1): os/arch
+ define select-android-config-h
+-- 
+2.7.4
+
